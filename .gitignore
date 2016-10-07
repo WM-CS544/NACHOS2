@@ -1,3 +1,4 @@
 *.o
 *.s
 threads/nachos
+userprog/nachos
