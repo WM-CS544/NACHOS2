@@ -89,28 +89,199 @@ HandleTLBFault(int vaddr)
 //	"which" is the kind of exception.  The list of possible exceptions 
 //	are in machine.h.
 //----------------------------------------------------------------------
+#ifdef CHANGED
+void getDataFromUser(int va, char *buffer);
+void getStringFromUser(int va, char *string);
+void increasePC();
+void SysCreate();
+void SysOpen();
+void SysRead();
+void SysWrite();
+void SysClose();
+#endif
 
 void
 ExceptionHandler(ExceptionType which)
 {
-    int type = machine->ReadRegister(2);
+	int type = machine->ReadRegister(2);
 
-    switch (which) {
-      case SyscallException:
-	switch (type) {
-	  case SC_Halt:
-            DEBUG('a', "Shutdown, initiated by user program.\n");
-            interrupt->Halt();
-          default:
-	    printf("Undefined SYSCALL %d\n", type);
-	    ASSERT(false);
-	}
-#ifdef USE_TLB
-      case PageFaultException:
-	HandleTLBFault(machine->ReadRegister(BadVAddrReg));
-	break;
+	switch (which) {
+		case SyscallException:
+			switch (type) {
+				case SC_Halt:
+					DEBUG('a', "Shutdown, initiated by user program.\n");
+					interrupt->Halt();
+#ifdef CHANGED
+					break;
+				case SC_Create:
+					DEBUG('a', "Create file, initiated by user program.\n");
+					SysCreate();
+					break;
+				case SC_Open:
+					DEBUG('a', "Open file, initiated by user program.\n");
+					SysOpen();
+					break;
+				case SC_Read:
+					DEBUG('a', "Read, initiated by user program.\n");
+					SysRead();
+					break;
+				case SC_Write:
+					DEBUG('a', "Write, initiated by user program.\n");
+					SysRead();
+					break;
+				case SC_Close:
+					DEBUG('a', "Close, initiated by user program.\n");
+					SysClose();
+					break;
 #endif
-      default: ;
-    }
+				default:
+					printf("Undefined SYSCALL %d\n", type);
+					ASSERT(false);
+			}
+#ifdef USE_TLB
+    case PageFaultException:
+			HandleTLBFault(machine->ReadRegister(BadVAddrReg));
+			break;
+#endif
+    default: ;
+  }
 }
+
+#ifdef  CHANGED
+void
+getStringFromUser(int va, char *string)
+{
+	for (std::size_t i=0; i<(sizeof(string)/sizeof(string[0])); i++) {
+		string[i] = machine->mainMemory[va++];	//no translation for now
+		if (string[i] == '\0') {
+			break;
+		}
+	}
+	string[sizeof(string)/sizeof(string[0])] = '\0';
+}
+
+void
+getDataFromUser(int va, char *buffer)
+{
+	for (std::size_t i=0; i<(sizeof(buffer)/sizeof(buffer[0])); i++) {
+		buffer[i] = machine->mainMemory[va++];	//no translation for now
+	}	
+}
+
+void
+increasePC()
+{
+	int tmp = machine->ReadRegister(PCReg);
+	machine->WriteRegister(PrevPCReg, tmp);
+	tmp = machine->ReadRegister(NextPCReg);
+	machine->WriteRegister(PCReg, tmp);
+	tmp+=4;
+	machine->WriteRegister(NextPCReg, tmp);
+}
+
+//void Create(char *name)
+void
+SysCreate()
+{
+	char *name = new(std::nothrow) char[42];
+	int va = machine->ReadRegister(4);	//virtual address of name string
+
+	getStringFromUser(va, name);
+
+	if (!fileSystem->Create(name, 0)) {
+		DEBUG('a', "File could not be created");
+	}
+
+	increasePC();
+	delete name;
+}
+
+//OpenFileId Open(char *name)
+void
+SysOpen()
+{
+	OpenFile *file;
+	char *name = new(std::nothrow) char[42];
+	int va = machine->ReadRegister(4);	//virtual address of name string
+	int fd = -1;
+	
+	getStringFromUser(va, name);
+
+	if ((file = fileSystem->Open(name)) != NULL) {
+		DEBUG('a', "File created");
+		fd = currentThread->space->AddFD(file);
+		if (fd == -1) {
+			DEBUG('a', "File could not be added to FDArray");
+		}
+	}
+
+	machine->WriteRegister(2, fd);
+	increasePC();
+	delete name;
+}
+
+//TODO: Does size include NULL and do we check if writing to much to user
+//void Read(char *buffer, int size, OpenFileId id)
+void
+SysRead()
+{
+	OpenFile *file;
+	int bytesRead;
+	int va = machine->ReadRegister(4);		//virtual address of buffer
+	int size = machine->ReadRegister(5);	//size
+	int fd = machine->ReadRegister(6);		//file descriptor
+	char *buffer = new(std::nothrow) char[size];
+	
+	if ((file = currentThread->space->GetFile(fd)) != NULL) {
+		bytesRead = file->Read(buffer, size);
+
+		for (int i=0; i < size; i++) {
+			machine->mainMemory[va++] = buffer[i];	//no translation for now
+		}
+
+	} else {
+		//fd doesn't exist panic?
+	}
+
+	machine->WriteRegister(2, bytesRead);
+	increasePC();
+	delete buffer;
+}
+
+//void Write(char *buffer, int size, OpenFileId id)
+void
+SysWrite()
+{
+	OpenFile *file;
+	int va = machine->ReadRegister(4);		//virtual address of buffer
+	int size = machine->ReadRegister(5);	//size
+	int fd = machine->ReadRegister(6);		//file descriptor
+	char *buffer = new(std::nothrow) char[size];
+
+	getDataFromUser(va, buffer);
+
+	if ((file = currentThread->space->GetFile(fd)) != NULL) {
+		file->Write(buffer, size);
+	} else {
+		//fd doesn't exist panic?
+	}
+	
+	increasePC();
+	delete buffer;
+}
+
+//void Close(OpenFileId id)
+void
+SysClose()
+{
+	int fd = machine->ReadRegister(4);	//file descriptor
+
+	if (!currentThread->space->DeleteFD(fd)) {
+		//fd doesn't exit panic?
+	}
+
+	increasePC();
+}
+#endif
+
 

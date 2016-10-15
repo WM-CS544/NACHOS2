@@ -1,4 +1,6 @@
 *.o
 *.s
+*.coff
 threads/nachos
 userprog/nachos
+bin/coff2noff

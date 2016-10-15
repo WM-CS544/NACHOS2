@@ -119,6 +119,13 @@ AddrSpace::AddrSpace(OpenFile *executable)
 			noffH.initData.size, noffH.initData.inFileAddr);
     }
 
+#ifdef CHANGED
+	for (std::size_t x=0; x < (sizeof(fdArray)/sizeof(fdArray[0])); x++) {
+		fdArray[x] = NULL;	//initialize fd array
+		//TODO: include console in and out
+	}
+#endif
+
 }
 
 //----------------------------------------------------------------------
@@ -193,3 +200,42 @@ void AddrSpace::RestoreState()
     machine->pageTableSize = numPages;
 #endif
 }
+
+#ifdef CHANGED
+int
+AddrSpace::AddFD(OpenFile *file)
+{
+	int fd = -1;
+	for (std::size_t i=0; i < (sizeof(fdArray)/sizeof(fdArray[0])); i++) {
+		if (fdArray[i] == NULL) {
+			fdArray[i] = file;
+			fd = i;
+		}
+	}
+	return fd;
+}
+
+OpenFile*
+AddrSpace::GetFile(int fd)
+{
+	OpenFile *file = NULL;
+	if (fd < (sizeof(fdArray)/sizeof(fdArray[0]))) {
+		file = fdArray[fd];
+	}
+
+	return file;
+}
+int
+AddrSpace::DeleteFD(int fd)
+{
+	OpenFile *file;
+	if (fd < (sizeof(fdArray)/sizeof(fdArray[0]))) {
+		if ((file = fdArray[fd]) != NULL) {
+			delete file;
+			fdArray[fd] = NULL;
+			return 1;
+		}
+	}
+	return 0;
+}
+#endif
