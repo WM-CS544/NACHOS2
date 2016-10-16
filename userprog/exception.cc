@@ -90,8 +90,8 @@ HandleTLBFault(int vaddr)
 //	are in machine.h.
 //----------------------------------------------------------------------
 #ifdef CHANGED
-void getDataFromUser(int va, char *buffer);
-void getStringFromUser(int va, char *string);
+void getDataFromUser(int va, char *buffer, int length);
+void getStringFromUser(int va, char *string, int length);
 void increasePC();
 void SysCreate();
 void SysOpen();
@@ -127,7 +127,7 @@ ExceptionHandler(ExceptionType which)
 					break;
 				case SC_Write:
 					DEBUG('a', "Write, initiated by user program.\n");
-					SysRead();
+					SysWrite();
 					break;
 				case SC_Close:
 					DEBUG('a', "Close, initiated by user program.\n");
@@ -149,21 +149,23 @@ ExceptionHandler(ExceptionType which)
 
 #ifdef  CHANGED
 void
-getStringFromUser(int va, char *string)
+getStringFromUser(int va, char *string, int length)
 {
-	for (std::size_t i=0; i<(sizeof(string)/sizeof(string[0])); i++) {
+	for (int i=0; i<length; i++) {
 		string[i] = machine->mainMemory[va++];	//no translation for now
 		if (string[i] == '\0') {
 			break;
 		}
 	}
-	string[sizeof(string)/sizeof(string[0])] = '\0';
+
+	printf("got string: %s\n", string);
+	string[length-1] = '\0';
 }
 
 void
-getDataFromUser(int va, char *buffer)
+getDataFromUser(int va, char *buffer, int length)
 {
-	for (std::size_t i=0; i<(sizeof(buffer)/sizeof(buffer[0])); i++) {
+	for (int i=0; i<length; i++) {
 		buffer[i] = machine->mainMemory[va++];	//no translation for now
 	}	
 }
@@ -186,7 +188,9 @@ SysCreate()
 	char *name = new(std::nothrow) char[42];
 	int va = machine->ReadRegister(4);	//virtual address of name string
 
-	getStringFromUser(va, name);
+	getStringFromUser(va, name, 42);
+
+	printf("creating file: %s\n", name);
 
 	if (!fileSystem->Create(name, 0)) {
 		DEBUG('a', "File could not be created");
@@ -205,11 +209,15 @@ SysOpen()
 	int va = machine->ReadRegister(4);	//virtual address of name string
 	int fd = -1;
 	
-	getStringFromUser(va, name);
+	getStringFromUser(va, name, 42);
+
+	printf("opening file: %s\n", name);
 
 	if ((file = fileSystem->Open(name)) != NULL) {
-		DEBUG('a', "File created");
+		DEBUG('a', "File opened");
+		printf("file opened\n");
 		fd = currentThread->space->AddFD(file);
+		printf("fd of opened file: %d\n", fd);
 		if (fd == -1) {
 			DEBUG('a', "File could not be added to FDArray");
 		}
@@ -231,6 +239,8 @@ SysRead()
 	int size = machine->ReadRegister(5);	//size
 	int fd = machine->ReadRegister(6);		//file descriptor
 	char *buffer = new(std::nothrow) char[size];
+
+	printf("reading from fd %d\n", fd);
 	
 	if ((file = currentThread->space->GetFile(fd)) != NULL) {
 		bytesRead = file->Read(buffer, size);
@@ -258,7 +268,9 @@ SysWrite()
 	int fd = machine->ReadRegister(6);		//file descriptor
 	char *buffer = new(std::nothrow) char[size];
 
-	getDataFromUser(va, buffer);
+	printf("writing to fd %d\n", fd);
+
+	getDataFromUser(va, buffer, size);
 
 	if ((file = currentThread->space->GetFile(fd)) != NULL) {
 		file->Write(buffer, size);
@@ -275,6 +287,8 @@ void
 SysClose()
 {
 	int fd = machine->ReadRegister(4);	//file descriptor
+
+	printf("closing file: %d\n", fd);
 
 	if (!currentThread->space->DeleteFD(fd)) {
 		//fd doesn't exit panic?

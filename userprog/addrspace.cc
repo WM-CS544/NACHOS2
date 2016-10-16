@@ -206,10 +206,12 @@ int
 AddrSpace::AddFD(OpenFile *file)
 {
 	int fd = -1;
-	for (std::size_t i=0; i < (sizeof(fdArray)/sizeof(fdArray[0])); i++) {
+	int size = sizeof(fdArray)/sizeof(fdArray[0]);
+	for (int i=0; i < size; i++) {
 		if (fdArray[i] == NULL) {
 			fdArray[i] = file;
 			fd = i;
+			break;
 		}
 	}
 	return fd;
@@ -219,7 +221,8 @@ OpenFile*
 AddrSpace::GetFile(int fd)
 {
 	OpenFile *file = NULL;
-	if (fd < (sizeof(fdArray)/sizeof(fdArray[0]))) {
+	int size = sizeof(fdArray)/sizeof(fdArray[0]);
+	if (fd < size) {
 		file = fdArray[fd];
 	}
 
@@ -229,7 +232,8 @@ int
 AddrSpace::DeleteFD(int fd)
 {
 	OpenFile *file;
-	if (fd < (sizeof(fdArray)/sizeof(fdArray[0]))) {
+	int size = sizeof(fdArray)/sizeof(fdArray[0]);
+	if (fd < size) {
 		if ((file = fdArray[fd]) != NULL) {
 			delete file;
 			fdArray[fd] = NULL;
