@@ -19,6 +19,10 @@ Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
 					// for invoking context switches
 
+#ifdef CHANGED
+SynchConsole *synchConsole;
+#endif
+
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
 #endif
@@ -146,9 +150,13 @@ Initialize(int argc, char **argv)
 
     interrupt->Enable();
     CallOnUserAbort(Cleanup);			// if user hits ctl-C
-    
+
 #ifdef USER_PROGRAM
     machine = new(std::nothrow) Machine(debugUserProg);	// this must come first
+#endif
+
+#ifdef CHANGED
+		synchConsole = new(std::nothrow) SynchConsole(NULL, NULL);
 #endif
 
 #ifdef FILESYS
@@ -172,6 +180,10 @@ void
 Cleanup()
 {
     printf("\nCleaning up...\n");
+#ifdef CHANGED
+		delete synchConsole;
+#endif
+
 #ifdef NETWORK
     delete postOffice;
 #endif

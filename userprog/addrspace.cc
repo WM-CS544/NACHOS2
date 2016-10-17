@@ -121,8 +121,11 @@ AddrSpace::AddrSpace(OpenFile *executable)
 
 #ifdef CHANGED
 	for (std::size_t x=0; x < (sizeof(fdArray)/sizeof(fdArray[0])); x++) {
-		fdArray[x] = NULL;	//initialize fd array
-		//TODO: include console in and out
+		if (x == 0 || x == 1) {
+			fdArray[x] = (OpenFile *)1;	//could be a bad idea not sure
+		} else {
+			fdArray[x] = NULL;	//initialize fd array
+		}
 	}
 #endif
 

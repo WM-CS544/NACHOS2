@@ -158,7 +158,6 @@ getStringFromUser(int va, char *string, int length)
 		}
 	}
 
-	printf("got string: %s\n", string);
 	string[length-1] = '\0';
 }
 
@@ -190,8 +189,6 @@ SysCreate()
 
 	getStringFromUser(va, name, 42);
 
-	printf("creating file: %s\n", name);
-
 	if (!fileSystem->Create(name, 0)) {
 		DEBUG('a', "File could not be created");
 	}
@@ -211,13 +208,9 @@ SysOpen()
 	
 	getStringFromUser(va, name, 42);
 
-	printf("opening file: %s\n", name);
-
 	if ((file = fileSystem->Open(name)) != NULL) {
 		DEBUG('a', "File opened");
-		printf("file opened\n");
 		fd = currentThread->space->AddFD(file);
-		printf("fd of opened file: %d\n", fd);
 		if (fd == -1) {
 			DEBUG('a', "File could not be added to FDArray");
 		}
@@ -228,25 +221,31 @@ SysOpen()
 	delete name;
 }
 
-//TODO: Does size include NULL and do we check if writing to much to user
+//TODO: Does size include NULL and do we check if writing too much to user and check if console open
 //void Read(char *buffer, int size, OpenFileId id)
 void
 SysRead()
 {
 	OpenFile *file;
-	int bytesRead;
+	int bytesRead = -1;
 	int va = machine->ReadRegister(4);		//virtual address of buffer
 	int size = machine->ReadRegister(5);	//size
 	int fd = machine->ReadRegister(6);		//file descriptor
 	char *buffer = new(std::nothrow) char[size];
 
-	printf("reading from fd %d\n", fd);
-	
 	if ((file = currentThread->space->GetFile(fd)) != NULL) {
 		bytesRead = file->Read(buffer, size);
 
-		for (int i=0; i < size; i++) {
-			machine->mainMemory[va++] = buffer[i];	//no translation for now
+		if (fd == ConsoleInput) {
+			for (int i=0; i < size; i++) {
+				machine->mainMemory[va++] = synchConsole->GetChar();	//no translation for now
+			}
+		} else if (fd == ConsoleOutput) {
+			//can't read
+		} else {
+			for (int i=0; i < size; i++) {
+				machine->mainMemory[va++] = buffer[i];	//no translation for now
+			}
 		}
 
 	} else {
@@ -257,7 +256,7 @@ SysRead()
 	increasePC();
 	delete buffer;
 }
-
+//TODO: Check if console open
 //void Write(char *buffer, int size, OpenFileId id)
 void
 SysWrite()
@@ -268,12 +267,18 @@ SysWrite()
 	int fd = machine->ReadRegister(6);		//file descriptor
 	char *buffer = new(std::nothrow) char[size];
 
-	printf("writing to fd %d\n", fd);
-
 	getDataFromUser(va, buffer, size);
 
 	if ((file = currentThread->space->GetFile(fd)) != NULL) {
-		file->Write(buffer, size);
+		if (fd == ConsoleInput) {
+			//can't read from input
+		} else if (fd == ConsoleOutput) {
+			for (int i=0; i < size; i++) {
+				synchConsole->PutChar(buffer[i]);
+			}
+		} else {
+			file->Write(buffer, size);
+		}
 	} else {
 		//fd doesn't exist panic?
 	}
@@ -287,8 +292,6 @@ void
 SysClose()
 {
 	int fd = machine->ReadRegister(4);	//file descriptor
-
-	printf("closing file: %d\n", fd);
 
 	if (!currentThread->space->DeleteFD(fd)) {
 		//fd doesn't exit panic?
