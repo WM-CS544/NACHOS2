@@ -236,15 +236,15 @@ SysRead()
 	if ((file = currentThread->space->GetFile(fd)) != NULL) {
 
 		if (fd == ConsoleInput) {
+			bytesRead = size;
 			for (int i=0; i < size; i++) {
-				bytesRead = size;
 				machine->mainMemory[va++] = synchConsole->GetChar();	//no translation for now
 			}
 		} else if (fd == ConsoleOutput) {
 			//can't read from output
 		} else {
+			bytesRead = file->Read(buffer, size);
 			for (int i=0; i < size; i++) {
-				bytesRead = file->Read(buffer, size);
 				machine->mainMemory[va++] = buffer[i];	//no translation for now
 			}
 		}
@@ -272,7 +272,7 @@ SysWrite()
 
 	if ((file = currentThread->space->GetFile(fd)) != NULL) {
 		if (fd == ConsoleInput) {
-			//can't read from input
+			//can't write to input
 		} else if (fd == ConsoleOutput) {
 			for (int i=0; i < size; i++) {
 				synchConsole->PutChar(buffer[i]);
@@ -295,7 +295,7 @@ SysClose()
 	int fd = machine->ReadRegister(4);	//file descriptor
 
 	if (!currentThread->space->DeleteFD(fd)) {
-		//fd doesn't exit
+		//fd doesn't exist
 	}
 
 	increasePC();
