@@ -14,7 +14,9 @@ class SynchConsole {
 		~SynchConsole();
 
 		void PutChar(char ch);
+		void Write(char *buffer, int size);
 		char GetChar();
+		int Read(char *buffer, int size);
 		inline void ReadAvail(){ readAvail->V(); };
 		inline void WriteDone(){ writeDone->V(); };
 

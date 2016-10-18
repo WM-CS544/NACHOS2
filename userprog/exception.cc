@@ -236,9 +236,9 @@ SysRead()
 	if ((file = currentThread->space->GetFile(fd)) != NULL) {
 
 		if (fd == ConsoleInput) {
-			bytesRead = size;
+			bytesRead = synchConsole->Read(buffer, size);
 			for (int i=0; i < size; i++) {
-				machine->mainMemory[va++] = synchConsole->GetChar();	//no translation for now
+				machine->mainMemory[va++] = buffer[i];	//no translation for now
 			}
 		} else if (fd == ConsoleOutput) {
 			//can't read from output
@@ -274,9 +274,7 @@ SysWrite()
 		if (fd == ConsoleInput) {
 			//can't write to input
 		} else if (fd == ConsoleOutput) {
-			for (int i=0; i < size; i++) {
-				synchConsole->PutChar(buffer[i]);
-			}
+			synchConsole->Write(buffer, size);
 		} else {
 			file->Write(buffer, size);
 		}

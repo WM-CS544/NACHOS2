@@ -52,6 +52,21 @@ SynchConsole::GetChar()
 	return ch;
 }
 
+int
+SynchConsole::Read(char *buffer, int size)
+{
+	lock->Acquire();
+	
+	for (int i=0; i < size; i++) {
+		readAvail->P();
+		buffer[i] = console->GetChar();
+	}	
+
+	lock->Release();
+
+	return size;
+}
+
 void
 SynchConsole::PutChar(char ch)
 {
@@ -61,6 +76,19 @@ SynchConsole::PutChar(char ch)
 	writeDone->P();				//wait for write to finish
 
 	lock->Release();	//release lock
+}
+
+void
+SynchConsole::Write(char *buffer, int size)
+{
+	lock->Acquire();
+
+	for (int i=0; i < size; i++) {
+		console->PutChar(buffer[i]);
+		writeDone->P();
+	}
+
+	lock->Release();
 }
 
 #endif
