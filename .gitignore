@@ -11,3 +11,5 @@ test/fileio
 test/hellocons
 test/fromcons
 test/hellofile
+fileio.out
+hello.out
