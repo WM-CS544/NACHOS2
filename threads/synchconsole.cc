@@ -26,8 +26,7 @@ SynchConsole::SynchConsole(char *in, char *out)
 	console = new(std::nothrow) Console(in, out, staticReadAvail, staticWriteDone, int(this));
 	readAvail = new(std::nothrow) Semaphore("read avail", 0);
 	writeDone = new(std::nothrow) Semaphore("write done", 0);
-	readLock = new(std::nothrow) Lock("read lock");
-	writeLock = new(std::nothrow) Lock("write lock");
+	lock = new(std::nothrow) Lock("console lock");
 }
 
 SynchConsole::~SynchConsole()
@@ -35,8 +34,7 @@ SynchConsole::~SynchConsole()
 	delete console;
 	delete readAvail;
 	delete writeDone;
-	delete readLock;
-	delete writeLock;
+	delete lock;
 }
 
 char
@@ -44,26 +42,25 @@ SynchConsole::GetChar()
 {
 	char ch;
 
-	readLock->Acquire();			//get lock
+	lock->Acquire();			//get lock
 
 	readAvail->P();						//wait for something to read
 	ch = console->GetChar();	//read char
 
-	readLock->Release();			//release lock
+	lock->Release();			//release lock
 
 	return ch;
-
 }
 
 void
 SynchConsole::PutChar(char ch)
 {
-	writeLock->Acquire();	//get lock
+	lock->Acquire();	//get lock
 
 	console->PutChar(ch);	//write to console
 	writeDone->P();				//wait for write to finish
 
-	writeLock->Release();	//release lock
+	lock->Release();	//release lock
 }
 
 #endif

@@ -22,8 +22,7 @@ class SynchConsole {
 		Console *console;
 		Semaphore *readAvail;
 		Semaphore *writeDone;
-		Lock *readLock;
-		Lock *writeLock;
+		Lock *lock;
 };
 
 #endif
