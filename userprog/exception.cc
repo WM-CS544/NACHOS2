@@ -151,6 +151,7 @@ ExceptionHandler(ExceptionType which)
 void
 getStringFromUser(int va, char *string, int length)
 {
+	// iterate through length of the string until a null byte is reached, then break
 	for (int i=0; i<length; i++) {
 		string[i] = machine->mainMemory[va++];	//no translation for now
 		if (string[i] == '\0') {
@@ -158,17 +159,20 @@ getStringFromUser(int va, char *string, int length)
 		}
 	}
 
+	// Place a null byte at end of char * to terminate string
 	string[length-1] = '\0';
 }
 
 void
 getDataFromUser(int va, char *buffer, int length)
 {
+	// We can rely on a 1-1 mapping from main memory at the moment 
 	for (int i=0; i<length; i++) {
 		buffer[i] = machine->mainMemory[va++];	//no translation for now
 	}	
 }
 
+// increments the program counter by 4 bytes
 void
 increasePC()
 {
@@ -180,23 +184,29 @@ increasePC()
 	machine->WriteRegister(NextPCReg, tmp);
 }
 
+// Helper function to create a file.  To do this we need to fetch the filename 
+// string from user-memory and bring it into the kernel memory.  From there, 
+// we can use the fileSystem->Create method to create the empty file.  
 //void Create(char *name)
 void
 SysCreate()
 {
-	char *name = new(std::nothrow) char[42];
+	char *name = new(std::nothrow) char[42]; // 42 chosen semi-arbitrarily.  Might want to change this later.
 	int va = machine->ReadRegister(4);	//virtual address of name string
 
 	getStringFromUser(va, name, 42);
 
 	if (!fileSystem->Create(name, 0)) {
 		DEBUG('a', "File could not be created");
+		// On failure do nothing, since the syscall is a void function
 	}
 
-	increasePC();
-	delete name;
+	increasePC(); // Remember to increment the program counter
+	delete name; // Delete the name string to avoid memory leaks
 }
 
+// Helper function to open a file and return the OpenFileId associated with it. 
+// On error, return a -1.  
 //OpenFileId Open(char *name)
 void
 SysOpen()
@@ -204,35 +214,38 @@ SysOpen()
 	OpenFile *file;
 	char *name = new(std::nothrow) char[42];
 	int va = machine->ReadRegister(4);	//virtual address of name string
-	int fd = -1;
+	int fd = -1; // Initialize file descriptor to -1 in case of error
 	
+	// Fetch the filename string from user-mem
 	getStringFromUser(va, name, 42);
 
 	if ((file = fileSystem->Open(name)) != NULL) {
 		DEBUG('a', "File opened");
-		fd = currentThread->space->AddFD(file);
+		fd = currentThread->space->AddFD(file); // Add a file descriptor to the array
 		if (fd == -1) {
 			DEBUG('a', "File could not be added to FDArray");
 		}
 	}
 
+	// Place the file descriptor back in R2, to return
 	machine->WriteRegister(2, fd);
-	increasePC();
-	delete name;
+	increasePC(); // Remember to increment the program counter
+	delete name; // Delete the name string to avoid memory leaks
 }
 
 //TODO: Does size include NULL and do we check if writing too much to user and check if console open
-//void Read(char *buffer, int size, OpenFileId id)
+//int Read(char *buffer, int size, OpenFileId id)
 void
 SysRead()
 {
 	OpenFile *file;
-	int bytesRead = -1;
+	int bytesRead = -1; // Return -1 if file could not be read
 	int va = machine->ReadRegister(4);		//virtual address of buffer
 	int size = machine->ReadRegister(5);	//size
 	int fd = machine->ReadRegister(6);		//file descriptor
 	char *buffer = new(std::nothrow) char[size];
 
+	// GetFile should return null on error.  In this case do nothing
 	if ((file = currentThread->space->GetFile(fd)) != NULL) {
 
 		if (fd == ConsoleInput) {
@@ -241,7 +254,7 @@ SysRead()
 				machine->mainMemory[va++] = buffer[i];	//no translation for now
 			}
 		} else if (fd == ConsoleOutput) {
-			//can't read from output
+			//can't read from output - do nothing
 		} else {
 			bytesRead = file->Read(buffer, size);
 			for (int i=0; i < size; i++) {
@@ -250,12 +263,15 @@ SysRead()
 		}
 
 	} else {
+		// In this case we just keep bytesRead set to -1
+		// and remember to increment PC
 		//fd doesn't exist
 	}
 
+	// Place the number of bytes read into R2 to return
 	machine->WriteRegister(2, bytesRead);
 	increasePC();
-	delete buffer;
+	delete buffer; // Avoid memory leaks
 }
 //TODO: Check if console open
 //void Write(char *buffer, int size, OpenFileId id)
@@ -268,8 +284,10 @@ SysWrite()
 	int fd = machine->ReadRegister(6);		//file descriptor
 	char *buffer = new(std::nothrow) char[size];
 
+	// Fetch string from user-mem
 	getDataFromUser(va, buffer, size);
 
+	// GetFile should return null on error.  In this case do nothing
 	if ((file = currentThread->space->GetFile(fd)) != NULL) {
 		if (fd == ConsoleInput) {
 			//can't write to input
@@ -279,11 +297,14 @@ SysWrite()
 			file->Write(buffer, size);
 		}
 	} else {
+		// In this case we dont return anything since Write() is a void
+		// Just remember to increment PC at end
 		//fd doesn't exist
 	}
 	
+	// No return value for the Read() syscall
 	increasePC();
-	delete buffer;
+	delete buffer; // Avoid memory leaks
 }
 
 //void Close(OpenFileId id)
@@ -292,11 +313,12 @@ SysClose()
 {
 	int fd = machine->ReadRegister(4);	//file descriptor
 
+	// Call helper DeleteFD function to remove the file descriptor from the array
 	if (!currentThread->space->DeleteFD(fd)) {
 		//fd doesn't exist
 	}
 
-	increasePC();
+	increasePC(); // Remember to increment the PC
 }
 #endif
 
