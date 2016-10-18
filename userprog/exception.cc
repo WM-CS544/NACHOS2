@@ -234,22 +234,23 @@ SysRead()
 	char *buffer = new(std::nothrow) char[size];
 
 	if ((file = currentThread->space->GetFile(fd)) != NULL) {
-		bytesRead = file->Read(buffer, size);
 
 		if (fd == ConsoleInput) {
 			for (int i=0; i < size; i++) {
+				bytesRead = size;
 				machine->mainMemory[va++] = synchConsole->GetChar();	//no translation for now
 			}
 		} else if (fd == ConsoleOutput) {
-			//can't read
+			//can't read from output
 		} else {
 			for (int i=0; i < size; i++) {
+				bytesRead = file->Read(buffer, size);
 				machine->mainMemory[va++] = buffer[i];	//no translation for now
 			}
 		}
 
 	} else {
-		//fd doesn't exist panic?
+		//fd doesn't exist
 	}
 
 	machine->WriteRegister(2, bytesRead);
@@ -280,7 +281,7 @@ SysWrite()
 			file->Write(buffer, size);
 		}
 	} else {
-		//fd doesn't exist panic?
+		//fd doesn't exist
 	}
 	
 	increasePC();
@@ -294,7 +295,7 @@ SysClose()
 	int fd = machine->ReadRegister(4);	//file descriptor
 
 	if (!currentThread->space->DeleteFD(fd)) {
-		//fd doesn't exit panic?
+		//fd doesn't exit
 	}
 
 	increasePC();

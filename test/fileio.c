@@ -24,16 +24,16 @@ main()
     int numbytes, retval;
 
     Create("fileio.out");
-		//prints("Past the Create()\n", ConsoleOutput);
+    prints("Past the Create()\n", ConsoleOutput);
     output = Open("fileio.out");
-		//prints("Output Open returned descriptor ", ConsoleOutput);
-		//printd((int)output, ConsoleOutput);
-		//prints("\n", ConsoleOutput);
+    prints("Output Open returned descriptor ", ConsoleOutput);
+    printd((int)output, ConsoleOutput);
+    prints("\n", ConsoleOutput);
 
     input = Open("fileio.input");
-		//prints("Input Open returned descriptor ", ConsoleOutput);
-		//printd((int)input, ConsoleOutput);
-		//prints("\n", ConsoleOutput);
+    prints("Input Open returned descriptor ", ConsoleOutput);
+    printd((int)input, ConsoleOutput);
+    prints("\n", ConsoleOutput);
 
     numbytes = 0;
 
@@ -42,7 +42,7 @@ main()
       Write(&c, 1, output);
     }
 
-		//prints("Copy loop escaped: ", ConsoleOutput);
+    prints("Copy loop escaped: ", ConsoleOutput);
     printd(numbytes, ConsoleOutput);
     prints(" bytes copied\n", ConsoleOutput);
 
