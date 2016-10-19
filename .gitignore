@@ -1,5 +1,4 @@
 *.o
-*.s
 *.coff
 threads/nachos
 userprog/nachos
