@@ -30,11 +30,6 @@ extern Interrupt *interrupt;			// interrupt status
 extern Statistics *stats;			// performance metrics
 extern Timer *timer;				// the hardware alarm clock
 
-#ifdef CHANGED
-#include "synchconsole.h"
-extern SynchConsole *synchConsole;
-#endif
-
 #ifdef USER_PROGRAM
 #include "machine.h"
 extern Machine* machine;	// user program memory and registers
@@ -53,6 +48,15 @@ extern SynchDisk   *synchDisk;
 #ifdef NETWORK
 #include "post.h"
 extern PostOffice* postOffice;
+#endif
+
+#ifdef CHANGED
+#include "synchconsole.h"
+extern SynchConsole *synchConsole;
+
+#include "memorymanager.h"
+class MemoryManager;
+extern MemoryManager *memoryManager;
 #endif
 
 #endif // SYSTEM_H

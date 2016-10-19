@@ -34,6 +34,8 @@ class AddrSpace {
 		int AddFD(OpenFile *file);
 		OpenFile *GetFile(int fd);
 		int	DeleteFD(int fd); 
+
+		int GetPhysPageNum(int virtPageNum);
 #endif
 
   private:

@@ -91,7 +91,11 @@ AddrSpace::AddrSpace(OpenFile *executable)
     pageTable = new(std::nothrow) TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
 	pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
+#ifndef CHANGED
 	pageTable[i].physicalPage = i;
+#else
+	pageTable[i].physicalPage = memoryManager->NewPage();
+#endif
 	pageTable[i].valid = true;
 	pageTable[i].use = false;
 	pageTable[i].dirty = false;
@@ -231,6 +235,7 @@ AddrSpace::GetFile(int fd)
 
 	return file;
 }
+
 int
 AddrSpace::DeleteFD(int fd)
 {
@@ -244,5 +249,11 @@ AddrSpace::DeleteFD(int fd)
 		}
 	}
 	return 0;
+}
+
+int
+AddrSpace::GetPhysPageNum(int virtPageNum)
+{
+	return pageTable[virtPageNum].physicalPage;
 }
 #endif

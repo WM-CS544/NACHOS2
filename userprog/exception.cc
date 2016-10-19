@@ -90,8 +90,9 @@ HandleTLBFault(int vaddr)
 //	are in machine.h.
 //----------------------------------------------------------------------
 #ifdef CHANGED
-void getDataFromUser(int va, char *buffer, int length);
 void getStringFromUser(int va, char *string, int length);
+void getDataFromUser(int va, char *buffer, int length);
+void writeDataToUser(int va, char *buffer, int length);
 void increasePC();
 void SysCreate();
 void SysOpen();
@@ -153,7 +154,7 @@ getStringFromUser(int va, char *string, int length)
 {
 	// iterate through length of the string until a null byte is reached, then break
 	for (int i=0; i<length; i++) {
-		string[i] = machine->mainMemory[va++];	//no translation for now
+		string[i] = memoryManager->ReadByte(va++);	//translation done in memoryManager
 		if (string[i] == '\0') {
 			break;
 		}
@@ -166,10 +167,17 @@ getStringFromUser(int va, char *string, int length)
 void
 getDataFromUser(int va, char *buffer, int length)
 {
-	// We can rely on a 1-1 mapping from main memory at the moment 
 	for (int i=0; i<length; i++) {
-		buffer[i] = machine->mainMemory[va++];	//no translation for now
+		buffer[i] = memoryManager->ReadByte(va++); //translation done in memoryManager
 	}	
+}
+
+void
+writeDataToUser(int va, char *buffer, int length)
+{
+	for (int i=0; i < length; i++) {
+		memoryManager->WriteByte(va++, buffer[i]);
+	}
 }
 
 // increments the program counter by 4 bytes
@@ -250,16 +258,12 @@ SysRead()
 
 		if (fd == ConsoleInput) {
 			bytesRead = synchConsole->Read(buffer, size);
-			for (int i=0; i < size; i++) {
-				machine->mainMemory[va++] = buffer[i];	//no translation for now
-			}
+			writeDataToUser(va, buffer, size);
 		} else if (fd == ConsoleOutput) {
 			//can't read from output - do nothing
 		} else {
 			bytesRead = file->Read(buffer, size);
-			for (int i=0; i < size; i++) {
-				machine->mainMemory[va++] = buffer[i];	//no translation for now
-			}
+			writeDataToUser(va, buffer, size);
 		}
 
 	} else {
@@ -302,7 +306,7 @@ SysWrite()
 		//fd doesn't exist
 	}
 	
-	// No return value for the Read() syscall
+	// No return value for the Write() syscall
 	increasePC();
 	delete buffer; // Avoid memory leaks
 }

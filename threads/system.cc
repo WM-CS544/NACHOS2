@@ -21,6 +21,8 @@ Timer *timer;				// the hardware timer device,
 
 #ifdef CHANGED
 SynchConsole *synchConsole;
+
+MemoryManager *memoryManager;
 #endif
 
 #ifdef FILESYS_NEEDED
@@ -157,6 +159,8 @@ Initialize(int argc, char **argv)
 
 #ifdef CHANGED
 		synchConsole = new(std::nothrow) SynchConsole(NULL, NULL);
+		
+		memoryManager = new(std::nothrow) MemoryManager(NumPhysPages);
 #endif
 
 #ifdef FILESYS
