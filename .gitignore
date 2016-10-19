@@ -3,7 +3,6 @@
 *.coff
 threads/nachos
 userprog/nachos
-bin/coff2noff
 test/matmult
 test/halt
 test/shell
