@@ -124,9 +124,9 @@ AddrSpace::AddrSpace(OpenFile *executable)
 			noffH.code.size, noffH.code.inFileAddr);
 #else
 			//TODO: Maybe clean this up a little
-			for (i=(noffH.code.virtualAddr % PageSize); i < noffH.code.size; i+=(PageSize - (i % PageSize))) {
+			for (i=(noffH.code.virtualAddr % PageSize); i < (unsigned int)noffH.code.size; i+=(PageSize - (i % PageSize))) {
 				int physAddress = GetPhysAddress((noffH.code.virtualAddr + i) - (noffH.code.virtualAddr % PageSize));
-				int writtenSoFar = i - (noffH.code.virtualAddr % PageSize);
+				unsigned int writtenSoFar = i - (noffH.code.virtualAddr % PageSize);
 				int location = noffH.code.inFileAddr + writtenSoFar;
 				/*fprintf(stderr, "i = %d\n", i);
 				fprintf(stderr, "phys = %d\n", physAddress);
@@ -163,9 +163,9 @@ AddrSpace::AddrSpace(OpenFile *executable)
 			noffH.initData.size, noffH.initData.inFileAddr);
 #else
 			//TODO: Maybe clean this up a little
-			for (i=(noffH.initData.virtualAddr % PageSize); i < noffH.initData.size; i+=(PageSize - (i % PageSize))) {
+			for (i=(noffH.initData.virtualAddr % PageSize); i < (unsigned int)noffH.initData.size; i+=(PageSize - (i % PageSize))) {
 				int physAddress = GetPhysAddress((noffH.initData.virtualAddr + i) - (noffH.initData.virtualAddr % PageSize));
-				int writtenSoFar = i - (noffH.initData.virtualAddr % PageSize);
+				unsigned int writtenSoFar = i - (noffH.initData.virtualAddr % PageSize);
 				int location = noffH.initData.inFileAddr + writtenSoFar;
 				/*fprintf(stderr, "i = %d\n", i);
 				fprintf(stderr, "phys = %d\n", physAddress);
