@@ -13,6 +13,7 @@ MemoryManager::~MemoryManager()
 	delete memoryMap;
 }
 
+//TODO:Check if find returns -1
 int
 MemoryManager::NewPage()
 {

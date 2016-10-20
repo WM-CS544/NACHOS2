@@ -113,14 +113,80 @@ AddrSpace::AddrSpace(OpenFile *executable)
     if (noffH.code.size > 0) {
         DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
 			noffH.code.virtualAddr, noffH.code.size);
+#ifndef CHANGED
         executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]),
 			noffH.code.size, noffH.code.inFileAddr);
+#else
+			//TODO: Maybe clean this up a little
+			for (i=(noffH.code.virtualAddr % PageSize); i < noffH.code.size; i+=(PageSize - (i % PageSize))) {
+				int physAddress = GetPhysAddress((noffH.code.virtualAddr + i) - (noffH.code.virtualAddr % PageSize));
+				int writtenSoFar = i - (noffH.code.virtualAddr % PageSize);
+				int location = noffH.code.inFileAddr + writtenSoFar;
+				/*fprintf(stderr, "i = %d\n", i);
+				fprintf(stderr, "phys = %d\n", physAddress);
+				fprintf(stderr, "writtenSoFar = %d\n", writtenSoFar);
+				fprintf(stderr, "location = %d\n", location);*/
+
+				//not at beginning of page
+				if (i % PageSize != 0) { //more data than can fit on page
+					if ((noffH.code.size - writtenSoFar) > (PageSize - (i % PageSize))) {
+						executable->ReadAt(&(machine->mainMemory[physAddress]),
+								(PageSize - (i % PageSize)), location);
+					} else {	//all data can fit on current page
+						executable->ReadAt(&(machine->mainMemory[physAddress]),
+								(noffH.code.size - writtenSoFar), location);
+					}
+
+				} else { //starting at beginning of page
+					if ((noffH.code.size - writtenSoFar) > PageSize) {	//more data than can fit on page
+						executable->ReadAt(&(machine->mainMemory[physAddress]),
+								PageSize, (noffH.code.inFileAddr + writtenSoFar));
+					} else {	//all data can fit on current page
+						executable->ReadAt(&(machine->mainMemory[physAddress]),
+								(noffH.code.size - writtenSoFar), location);
+					}
+				}
+			}
+#endif
     }
     if (noffH.initData.size > 0) {
         DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
 			noffH.initData.virtualAddr, noffH.initData.size);
+#ifndef CHANGED
         executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]),
 			noffH.initData.size, noffH.initData.inFileAddr);
+#else
+			//TODO: Maybe clean this up a little
+			for (i=(noffH.initData.virtualAddr % PageSize); i < noffH.initData.size; i+=(PageSize - (i % PageSize))) {
+				int physAddress = GetPhysAddress((noffH.initData.virtualAddr + i) - (noffH.initData.virtualAddr % PageSize));
+				int writtenSoFar = i - (noffH.initData.virtualAddr % PageSize);
+				int location = noffH.initData.inFileAddr + writtenSoFar;
+				/*fprintf(stderr, "i = %d\n", i);
+				fprintf(stderr, "phys = %d\n", physAddress);
+				fprintf(stderr, "writtenSoFar = %d\n", writtenSoFar);
+				fprintf(stderr, "location = %d\n", location);*/
+
+				//not at beginning of page
+				if (i % PageSize != 0) { //more data than can fit on page
+					if ((noffH.initData.size - writtenSoFar) > (PageSize - (i % PageSize))) {
+						executable->ReadAt(&(machine->mainMemory[physAddress]),
+								(PageSize - (i % PageSize)), location);
+					} else {	//all data can fit on current page
+						executable->ReadAt(&(machine->mainMemory[physAddress]),
+								(noffH.initData.size - writtenSoFar), location);
+					}
+
+				} else { //starting at beginning of page
+					if ((noffH.initData.size - writtenSoFar) > PageSize) {	//more data than can fit on page
+						executable->ReadAt(&(machine->mainMemory[physAddress]),
+								PageSize, location);
+					} else {	//all data can fit on current page
+						executable->ReadAt(&(machine->mainMemory[physAddress]),
+								(noffH.initData.size - writtenSoFar), location);
+					}
+				}
+			}
+#endif
     }
 
 #ifdef CHANGED
@@ -255,5 +321,14 @@ int
 AddrSpace::GetPhysPageNum(int virtPageNum)
 {
 	return pageTable[virtPageNum].physicalPage;
+}
+
+int AddrSpace::GetPhysAddress(int va)
+{
+	int virtPageNum = va / PageSize;
+	int offset = va % PageSize;
+	int physPageNum = GetPhysPageNum(virtPageNum);
+
+	return (physPageNum * PageSize) + offset;
 }
 #endif

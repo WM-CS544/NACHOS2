@@ -36,6 +36,7 @@ class AddrSpace {
 		int	DeleteFD(int fd); 
 
 		int GetPhysPageNum(int virtPageNum);
+		int GetPhysAddress(int va);
 #endif
 
   private:
