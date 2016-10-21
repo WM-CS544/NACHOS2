@@ -17,22 +17,38 @@ MemoryManager::~MemoryManager()
 int
 MemoryManager::NewPage()
 {
-	return memoryMap->Find();	
+	lock->Acquire();
+
+	int pageNum = memoryMap->Find();
+
+	lock->Acquire();
+
+	return pageNum;
 }
 
 void
 MemoryManager::ClearPage(int page)
 {
+	lock->Acquire();
+
 	//page should not be empty if clearing it
 	ASSERT(memoryMap->Test(page));
 
 	memoryMap->Clear(page);
+
+	lock->Release();
 }
 
 int
 MemoryManager::NumPagesFree()
 {
-	return memoryMap->NumClear();
+	lock->Acquire();
+
+	int numClear = memoryMap->NumClear();
+
+	lock->Release();
+
+	return numClear;
 }
 
 //TODO: Add sanity checks

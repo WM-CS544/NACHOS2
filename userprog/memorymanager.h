@@ -22,6 +22,7 @@ class  MemoryManager {
 	private:
 
 		BitMap *memoryMap;
+		Lock *lock;
 };
 
 #endif //MEMORY_MANAGER_H
