@@ -154,7 +154,7 @@ getStringFromUser(int va, char *string, int length)
 {
 	// iterate through length of the string until a null byte is reached, then break
 	for (int i=0; i<length; i++) {
-		string[i] = memoryManager->ReadByte(va++);	//translation done in memoryManager
+		string[i] = currentThread->space->ReadByte(va++);	//translation done in memoryManager
 		if (string[i] == '\0') {
 			break;
 		}
@@ -168,7 +168,7 @@ void
 getDataFromUser(int va, char *buffer, int length)
 {
 	for (int i=0; i<length; i++) {
-		buffer[i] = memoryManager->ReadByte(va++); //translation done in memoryManager
+		buffer[i] = currentThread->space->ReadByte(va++); //translation done in memoryManager
 	}	
 }
 
@@ -176,7 +176,7 @@ void
 writeDataToUser(int va, char *buffer, int length)
 {
 	for (int i=0; i < length; i++) {
-		memoryManager->WriteByte(va++, buffer[i]);
+		currentThread->space->WriteByte(va++, buffer[i]);
 	}
 }
 
@@ -229,7 +229,7 @@ SysOpen()
 
 	if ((file = fileSystem->Open(name)) != NULL) {
 		DEBUG('a', "File opened");
-		fd = currentThread->space->AddFD(file); // Add a file descriptor to the array
+		fd = currentThread->space->GetProcessControlBlock()->GetFDSet()->AddFD(file); // Add a file descriptor to the array
 		if (fd == -1) {
 			DEBUG('a', "File could not be added to FDArray");
 		}
@@ -254,7 +254,7 @@ SysRead()
 	char *buffer = new(std::nothrow) char[size];
 
 	// GetFile should return null on error.  In this case do nothing
-	if ((file = currentThread->space->GetFile(fd)) != NULL) {
+	if ((file = currentThread->space->GetProcessControlBlock()->GetFDSet()->GetFile(fd)) != NULL) {
 
 		if (fd == ConsoleInput) {
 			bytesRead = synchConsole->Read(buffer, size);
@@ -292,7 +292,7 @@ SysWrite()
 	getDataFromUser(va, buffer, size);
 
 	// GetFile should return null on error.  In this case do nothing
-	if ((file = currentThread->space->GetFile(fd)) != NULL) {
+	if ((file = currentThread->space->GetProcessControlBlock()->GetFDSet()->GetFile(fd)) != NULL) {
 		if (fd == ConsoleInput) {
 			//can't write to input
 		} else if (fd == ConsoleOutput) {
@@ -318,7 +318,7 @@ SysClose()
 	int fd = machine->ReadRegister(4);	//file descriptor
 
 	// Call helper DeleteFD function to remove the file descriptor from the array
-	if (!currentThread->space->DeleteFD(fd)) {
+	if (!currentThread->space->GetProcessControlBlock()->GetFDSet()->DeleteFD(fd)) {
 		//fd doesn't exist
 	}
 

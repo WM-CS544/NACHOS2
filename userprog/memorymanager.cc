@@ -6,11 +6,13 @@
 MemoryManager::MemoryManager(int numPages)
 {
 	memoryMap = new(std::nothrow) BitMap(numPages);	
+	lock = new(std::nothrow) Lock("memory manager lock");
 }
 
 MemoryManager::~MemoryManager()
 {
 	delete memoryMap;
+	delete lock;
 }
 
 //TODO:Check if find returns -1
@@ -21,7 +23,7 @@ MemoryManager::NewPage()
 
 	int pageNum = memoryMap->Find();
 
-	lock->Acquire();
+	lock->Release();
 
 	return pageNum;
 }
@@ -49,29 +51,5 @@ MemoryManager::NumPagesFree()
 	lock->Release();
 
 	return numClear;
-}
-
-//TODO: Add sanity checks
-char
-MemoryManager::ReadByte(int va)
-{
-	int virtPageNum = va / PageSize;
-	int offset = va % PageSize;
-	
-	int physPageNum = currentThread->space->GetPhysPageNum(virtPageNum);
-
-	return machine->mainMemory[(physPageNum*PageSize) + offset];
-}
-
-//TODO: Add sanity checks
-void
-MemoryManager::WriteByte(int va, char byte)
-{
-	int virtPageNum = va / PageSize;
-	int offset = va % PageSize;
-	
-	int physPageNum = currentThread->space->GetPhysPageNum(virtPageNum);
-
-	machine->mainMemory[(physPageNum*PageSize) + offset] = byte;
 }
 #endif

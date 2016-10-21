@@ -198,13 +198,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
     }
 
 #ifdef CHANGED
-	for (std::size_t x=0; x < (sizeof(fdArray)/sizeof(fdArray[0])); x++) {
-		if (x == 0 || x == 1) {
-			fdArray[x] = (OpenFile *)1;	//could be a bad idea not sure
-		} else {
-			fdArray[x] = NULL;	//initialize fd array
-		}
-	}
+	processControlBlock = new(std::nothrow) ProcessControlBlock();
 #endif
 
 }
@@ -283,46 +277,35 @@ void AddrSpace::RestoreState()
 }
 
 #ifdef CHANGED
-int
-AddrSpace::AddFD(OpenFile *file)
+
+//TODO: Add sanity checks
+char
+AddrSpace::ReadByte(int va)
 {
-	int fd = -1;
-	int size = sizeof(fdArray)/sizeof(fdArray[0]);
-	for (int i=0; i < size; i++) {
-		if (fdArray[i] == NULL) {
-			fdArray[i] = file;
-			fd = i;
-			break;
-		}
-	}
-	return fd;
+	int virtPageNum = va / PageSize;
+	int offset = va % PageSize;
+	
+	int physPageNum = currentThread->space->GetPhysPageNum(virtPageNum);
+
+	return machine->mainMemory[(physPageNum*PageSize) + offset];
 }
 
-OpenFile*
-AddrSpace::GetFile(int fd)
+//TODO: Add sanity checks
+void
+AddrSpace::WriteByte(int va, char byte)
 {
-	OpenFile *file = NULL;
-	int size = sizeof(fdArray)/sizeof(fdArray[0]);
-	if (fd < size) {
-		file = fdArray[fd];
-	}
+	int virtPageNum = va / PageSize;
+	int offset = va % PageSize;
+	
+	int physPageNum = currentThread->space->GetPhysPageNum(virtPageNum);
 
-	return file;
+	machine->mainMemory[(physPageNum*PageSize) + offset] = byte;
 }
 
-int
-AddrSpace::DeleteFD(int fd)
+ProcessControlBlock*
+AddrSpace::GetProcessControlBlock()
 {
-	OpenFile *file;
-	int size = sizeof(fdArray)/sizeof(fdArray[0]);
-	if (fd < size) {
-		if ((file = fdArray[fd]) != NULL) {
-			delete file;
-			fdArray[fd] = NULL;
-			return 1;
-		}
-	}
-	return 0;
+	return processControlBlock;
 }
 
 int

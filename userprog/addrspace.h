@@ -15,6 +15,7 @@
 
 #include "copyright.h"
 #include "filesys.h"
+#include "processcontrolblock.h"
 
 #define UserStackSize		1024 	// increase this as necessary!
 
@@ -31,10 +32,10 @@ class AddrSpace {
     void SaveState();			// Save/restore address space-specific
     void RestoreState();		// info on a context switch 
 #ifdef CHANGED
-		int AddFD(OpenFile *file);
-		OpenFile *GetFile(int fd);
-		int	DeleteFD(int fd); 
+		ProcessControlBlock *GetProcessControlBlock();
 
+		char ReadByte(int va);
+		void WriteByte(int va, char byte);
 		int GetPhysPageNum(int virtPageNum);
 		int GetPhysAddress(int va);
 #endif
@@ -46,7 +47,7 @@ class AddrSpace {
     unsigned int numPages;		// Number of pages in the virtual 
 					// address space
 #ifdef CHANGED
-		OpenFile *fdArray[42];
+		ProcessControlBlock *processControlBlock;
 #endif
 };
 
