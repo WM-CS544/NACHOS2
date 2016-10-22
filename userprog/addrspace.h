@@ -32,6 +32,9 @@ class AddrSpace {
     void SaveState();			// Save/restore address space-specific
     void RestoreState();		// info on a context switch 
 #ifdef CHANGED
+		AddrSpace(AddrSpace *parentSpace, int pid);
+
+		unsigned int GetNumPages() {return numPages;};
 		ProcessControlBlock *GetProcessControlBlock();
 
 		char ReadByte(int va);

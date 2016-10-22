@@ -2,22 +2,35 @@
 
 #include "fdset.h"
 
-FDSet::FDSet()
+FDSet::FDSet(FDSet *copySet)
 {
-	FDSetEntry *consoleIn = new(std::nothrow) FDSetEntry;
-	consoleIn->numOpen = 1;
-	consoleIn->file = (OpenFile *)1;
-	FDSetEntry *consoleOut = new(std::nothrow) FDSetEntry;
-	consoleOut->numOpen = 1;
-	consoleOut->file = (OpenFile *)2;
 
-	for (std::size_t i=0; i < (sizeof(fdArray)/sizeof(fdArray[0])); i++) {
-		if (i == 0) {
-			fdArray[i] = consoleIn;
-		} else if (i == 1) {
-			fdArray[i] = consoleOut;
-		} else {
-			fdArray[i] = NULL;
+	if (copySet == NULL) {
+
+		FDSetEntry *consoleIn = new(std::nothrow) FDSetEntry;
+		consoleIn->numOpen = 1;
+		consoleIn->file = (OpenFile *)1;
+		FDSetEntry *consoleOut = new(std::nothrow) FDSetEntry;
+		consoleOut->numOpen = 1;
+		consoleOut->file = (OpenFile *)2;
+
+		for (std::size_t i=0; i < (sizeof(fdArray)/sizeof(fdArray[0])); i++) {
+			if (i == 0) {
+				fdArray[i] = consoleIn;
+			} else if (i == 1) {
+				fdArray[i] = consoleOut;
+			} else {
+				fdArray[i] = NULL;
+			}
+		}
+
+	} else {
+		FDSetEntry **copyArray = copySet->GetArray();
+		for (std::size_t i=0; i < (sizeof(fdArray)/sizeof(fdArray[0])); i++) {
+			if (copyArray[i] != NULL) {
+				copyArray[i]->numOpen++;
+			}
+			fdArray[i] = copyArray[i];
 		}
 	}
 }
@@ -30,6 +43,12 @@ FDSet::~FDSet()
 			delete fdArray[i];
 		}
 	}	
+}
+
+FDSetEntry**
+FDSet::GetArray()
+{
+	return fdArray;
 }
 
 int

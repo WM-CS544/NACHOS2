@@ -16,12 +16,14 @@ class FDSet {
 
 	public:
 
-		FDSet();
+		FDSet(FDSet *copySet);
 		~FDSet();
 			
+		FDSetEntry **GetArray();
 		int AddFD(OpenFile *file);
 		OpenFile *GetFile(int fd);
 		int DeleteFD(int fd);
+		FDSet *CopyFDSet();
 
 	private:
 		

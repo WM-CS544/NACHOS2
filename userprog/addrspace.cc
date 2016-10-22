@@ -198,7 +198,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
     }
 
 #ifdef CHANGED
-	processControlBlock = new(std::nothrow) ProcessControlBlock();
+	processControlBlock = new(std::nothrow) ProcessControlBlock(NULL, NULL, 1);
 #endif
 
 }
@@ -278,6 +278,40 @@ void AddrSpace::RestoreState()
 
 #ifdef CHANGED
 
+AddrSpace::AddrSpace(AddrSpace *parentSpace, int pid)
+{
+		numPages = parentSpace->GetNumPages();
+	
+    ASSERT(numPages <= NumPhysPages);		// check we're not trying
+						// to run anything too big --
+						// at least until we have
+						// virtual memory
+
+#ifndef USE_TLB
+// first, set up the translation 
+  pageTable = new(std::nothrow) TranslationEntry[numPages];
+  for (unsigned int i = 0; i < numPages; i++) {
+		pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
+		pageTable[i].physicalPage = memoryManager->NewPage();
+		pageTable[i].valid = true;
+		pageTable[i].use = false;
+		pageTable[i].dirty = false;
+		pageTable[i].readOnly = false;  // if the code segment was entirely on 
+																		// a separate page, we could set its 
+																		// pages to be read-only
+    }
+#endif    
+
+	//copy pages to new addrspace
+	for (unsigned int i=0; i < numPages; i++) {
+		for (unsigned int offset=0; offset < PageSize; offset++) {
+			machine->mainMemory[(pageTable[i].physicalPage * PageSize) + offset] = machine->mainMemory[(parentSpace->GetPhysPageNum(i) * PageSize) + offset];
+		}
+	}
+
+	processControlBlock = new(std::nothrow) ProcessControlBlock(parentSpace->GetProcessControlBlock(), parentSpace->GetProcessControlBlock()->GetFDSet(), pid);
+}
+
 //TODO: Add sanity checks
 char
 AddrSpace::ReadByte(int va)
@@ -285,7 +319,7 @@ AddrSpace::ReadByte(int va)
 	int virtPageNum = va / PageSize;
 	int offset = va % PageSize;
 	
-	int physPageNum = currentThread->space->GetPhysPageNum(virtPageNum);
+	int physPageNum = GetPhysPageNum(virtPageNum);
 
 	return machine->mainMemory[(physPageNum*PageSize) + offset];
 }
@@ -297,7 +331,7 @@ AddrSpace::WriteByte(int va, char byte)
 	int virtPageNum = va / PageSize;
 	int offset = va % PageSize;
 	
-	int physPageNum = currentThread->space->GetPhysPageNum(virtPageNum);
+	int physPageNum = GetPhysPageNum(virtPageNum);
 
 	machine->mainMemory[(physPageNum*PageSize) + offset] = byte;
 }

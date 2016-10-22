@@ -57,6 +57,9 @@ extern SynchConsole *synchConsole;
 #include "memorymanager.h"
 class MemoryManager;
 extern MemoryManager *memoryManager;
+
+#include "processmanager.h"
+extern ProcessManager *processManager;
 #endif
 
 #endif // SYSTEM_H

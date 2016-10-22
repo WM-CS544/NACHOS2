@@ -23,6 +23,8 @@ Timer *timer;				// the hardware timer device,
 SynchConsole *synchConsole;
 
 MemoryManager *memoryManager;
+
+ProcessManager *processManager;
 #endif
 
 #ifdef FILESYS_NEEDED
@@ -161,6 +163,8 @@ Initialize(int argc, char **argv)
 		synchConsole = new(std::nothrow) SynchConsole(NULL, NULL);
 		
 		memoryManager = new(std::nothrow) MemoryManager(NumPhysPages);
+
+		processManager = new(std::nothrow) ProcessManager();
 #endif
 
 #ifdef FILESYS
@@ -186,6 +190,8 @@ Cleanup()
     printf("\nCleaning up...\n");
 #ifdef CHANGED
 		delete synchConsole;
+		delete memoryManager;
+		delete processManager;
 #endif
 
 #ifdef NETWORK

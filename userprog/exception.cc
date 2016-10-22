@@ -99,6 +99,7 @@ void SysOpen();
 void SysRead();
 void SysWrite();
 void SysClose();
+void SysFork();
 #endif
 
 void
@@ -133,6 +134,10 @@ ExceptionHandler(ExceptionType which)
 				case SC_Close:
 					DEBUG('a', "Close, initiated by user program.\n");
 					SysClose();
+					break;
+				case SC_Fork:
+					DEBUG('a', "Fork, initiated by user program.\n");
+					SysFork();
 					break;
 #endif
 				default:
@@ -323,6 +328,33 @@ SysClose()
 	}
 
 	increasePC(); // Remember to increment the PC
+}
+
+//SpaceId Fork()
+void
+SysFork()
+{
+	//create new thread
+	SpaceId newPID = processManager->NewProcess();
+	Thread *newThread = new(std::nothrow) Thread("forked thread");		
+	AddrSpace *newSpace = new(std::nothrow) AddrSpace(currentThread->space, newPID);
+
+	newThread->space = newSpace;
+
+	//increase PC before and set retval before copying regs
+	increasePC();
+	machine->WriteRegister(2, 0);	//child gets 0
+
+	//set registers
+
+	for (int i = 0; i < NumTotalRegs; i++) {
+		newThread->userRegisters[i] =  machine->ReadRegister(i);
+	}
+
+	scheduler->ReadyToRun(newThread);
+
+	machine->WriteRegister(2, newPID);	//parent gets child PID
+
 }
 #endif
 
