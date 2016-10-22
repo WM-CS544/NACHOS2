@@ -100,6 +100,8 @@ void SysRead();
 void SysWrite();
 void SysClose();
 void SysFork();
+void SysJoin();
+void SysExit();
 #endif
 
 void
@@ -138,6 +140,14 @@ ExceptionHandler(ExceptionType which)
 				case SC_Fork:
 					DEBUG('a', "Fork, initiated by user program.\n");
 					SysFork();
+					break;
+				case SC_Join:
+					DEBUG('a', "Join, initiated by user program.\n");
+					SysJoin();
+					break;
+				case SC_Exit:
+					DEBUG('a', "Exit, initiated by user program.\n");
+					SysExit();
 					break;
 #endif
 				default:
@@ -313,7 +323,7 @@ SysWrite()
 	
 	// No return value for the Write() syscall
 	increasePC();
-	delete buffer; // Avoid memory leaks
+	delete [] buffer; // Avoid memory leaks
 }
 
 //void Close(OpenFileId id)
@@ -341,6 +351,12 @@ SysFork()
 
 	newThread->space = newSpace;
 
+	//add new thread to child list
+
+	ProcessControlBlock *newBlock = newSpace->GetProcessControlBlock();
+	Semaphore *newSem = new(std::nothrow) Semaphore("childDone sem", 0);
+	currentThread->space->GetProcessControlBlock()->AddChild(newBlock, newBlock->GetPID(), newSem);
+
 	//increase PC before and set retval before copying regs
 	increasePC();
 	machine->WriteRegister(2, 0);	//child gets 0
@@ -354,6 +370,44 @@ SysFork()
 	scheduler->ReadyToRun(newThread);
 
 	machine->WriteRegister(2, newPID);	//parent gets child PID
+}
+
+//int Join(SpaceId id)
+void
+SysJoin()
+{
+	SpaceId pid = machine->ReadRegister(4);
+	int retval = -1;
+
+	ChildNode *child = currentThread->space->GetProcessControlBlock()->GetChild(pid);
+	if (child != NULL) {
+		child->childDone->P();	//wait until child is done
+		fprintf(stderr, "in join\n");
+
+		retval = child->retval;
+
+		//TODO:remove child from list
+	}
+
+	machine->WriteRegister(2, retval);
+	increasePC();
+}
+
+//TODO: check if parent is alive
+//void Exit(int status)
+void
+SysExit()
+{
+	int status = machine->ReadRegister(4);
+
+	ProcessControlBlock *myBlock = currentThread->space->GetProcessControlBlock();
+	ProcessControlBlock *parentBlock = myBlock->GetParent();
+
+	
+	parentBlock->GetChild(myBlock->GetPID())->retval = status;	//tell parent return value
+	parentBlock->GetChild(myBlock->GetPID())->childDone->V();	//tell parent we are done
+
+	//TODO:clean up everything
 
 }
 #endif

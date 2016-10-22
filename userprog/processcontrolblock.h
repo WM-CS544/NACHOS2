@@ -18,12 +18,13 @@ class ProcessControlBlock {
 
 		FDSet *GetFDSet();
 		int GetPID();
+		ProcessControlBlock *GetParent() { return parentBlock; };
 
 		void SetFDSet(FDSet *parentSet);
 
 		void AddChild(ProcessControlBlock *childBlock, int childPID, Semaphore *childSem);
-		int DeleteChild(ProcessControlBlock *child);
-		ChildNode *GetChild(int pid);
+		void DeleteChild(ProcessControlBlock *child);
+		ChildNode *GetChild(int childPID);
 
 	private:
 

@@ -45,11 +45,37 @@ ProcessControlBlock::AddChild(ProcessControlBlock *childBlock, int childPID, Sem
 	newNode->next = NULL;
 
 	ChildNode *curNode = childListHead;
+	ChildNode *prevNode = NULL;
+
 	while (curNode != NULL) {
+		prevNode = curNode;
 		curNode = curNode->next;
 	}
+	
+	if (prevNode == NULL) { //empty list
+		childListHead = newNode;
+	} else {
+		prevNode->next = newNode;
+	}
+}
 
-	curNode->next = newNode;
+void
+ProcessControlBlock::DeleteChild(ProcessControlBlock *child)
+{
+
+}
+
+ChildNode*
+ProcessControlBlock::GetChild(int childPID)
+{
+	ChildNode *curNode = childListHead;
+
+	while (curNode != NULL) {
+		if (curNode->pid == pid) {
+			return curNode;
+		}
+	}
+	return curNode;	//will be NULL
 }
 
 #endif

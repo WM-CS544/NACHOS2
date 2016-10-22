@@ -82,7 +82,7 @@ void
 SynchConsole::Write(char *buffer, int size)
 {
 	lock->Acquire();
-
+	
 	for (int i=0; i < size; i++) {
 		console->PutChar(buffer[i]);
 		writeDone->P();

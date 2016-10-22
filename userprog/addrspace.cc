@@ -280,13 +280,12 @@ void AddrSpace::RestoreState()
 
 AddrSpace::AddrSpace(AddrSpace *parentSpace, int pid)
 {
-		numPages = parentSpace->GetNumPages();
-	
-    ASSERT(numPages <= NumPhysPages);		// check we're not trying
-						// to run anything too big --
-						// at least until we have
-						// virtual memory
+	numPages = parentSpace->GetNumPages();
 
+	ASSERT(numPages <= (unsigned int)memoryManager->NumPagesFree());		// check we're not trying
+					// to run anything too big --
+					// at least until we have
+					// virtual memory
 #ifndef USE_TLB
 // first, set up the translation 
   pageTable = new(std::nothrow) TranslationEntry[numPages];
