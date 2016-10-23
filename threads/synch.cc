@@ -132,6 +132,7 @@ Lock::Acquire()
 void
 Lock::Release() 
 {
+	ASSERT(isHeldByCurrentThread());
 	Thread *thread;
 	IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
@@ -140,7 +141,6 @@ Lock::Release()
 		scheduler->ReadyToRun(thread);
 	}
 	val = 1;
-	ASSERT(isHeldByCurrentThread());
 	hasLock = NULL;
 
 	(void) interrupt->SetLevel(oldLevel);

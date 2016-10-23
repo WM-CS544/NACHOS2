@@ -340,6 +340,15 @@ SysClose()
 	increasePC(); // Remember to increment the PC
 }
 
+void
+StartForked(int arg)
+{
+	currentThread->RestoreUserState();
+	currentThread->space->RestoreState();
+	machine->WriteRegister(2, 0);	//child gets 0
+	machine->Run();
+}
+
 //SpaceId Fork()
 void
 SysFork()
@@ -348,26 +357,17 @@ SysFork()
 	SpaceId newPID = processManager->NewProcess();
 	Thread *newThread = new(std::nothrow) Thread("forked thread");		
 	AddrSpace *newSpace = new(std::nothrow) AddrSpace(currentThread->space, newPID);
-
 	newThread->space = newSpace;
 
 	//add new thread to child list
-
 	ProcessControlBlock *newBlock = newSpace->GetProcessControlBlock();
 	Semaphore *newSem = new(std::nothrow) Semaphore("childDone sem", 0);
-	currentThread->space->GetProcessControlBlock()->AddChild(newBlock, newBlock->GetPID(), newSem);
+	currentThread->space->GetProcessControlBlock()->AddChild(newBlock, newPID, newSem);
 
-	//increase PC before and set retval before copying regs
+	//increase PC before saving registers to new thread
 	increasePC();
-	machine->WriteRegister(2, 0);	//child gets 0
-
-	//set registers
-
-	for (int i = 0; i < NumTotalRegs; i++) {
-		newThread->userRegisters[i] =  machine->ReadRegister(i);
-	}
-
-	scheduler->ReadyToRun(newThread);
+	newThread->SaveUserState();
+	newThread->Fork(StartForked, (int) newThread);	//fork off new thread
 
 	machine->WriteRegister(2, newPID);	//parent gets child PID
 }
@@ -382,7 +382,6 @@ SysJoin()
 	ChildNode *child = currentThread->space->GetProcessControlBlock()->GetChild(pid);
 	if (child != NULL) {
 		child->childDone->P();	//wait until child is done
-		fprintf(stderr, "in join\n");
 
 		retval = child->retval;
 
@@ -409,6 +408,7 @@ SysExit()
 
 	//TODO:clean up everything
 
+	currentThread->Finish();
 }
 #endif
 

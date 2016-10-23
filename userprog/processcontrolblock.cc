@@ -71,7 +71,7 @@ ProcessControlBlock::GetChild(int childPID)
 	ChildNode *curNode = childListHead;
 
 	while (curNode != NULL) {
-		if (curNode->pid == pid) {
+		if (curNode->pid == childPID) {
 			return curNode;
 		}
 	}

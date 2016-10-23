@@ -10,6 +10,7 @@ test/fileio
 test/hellocons
 test/fromcons
 test/hellofile
+test/newfork
 fileio.out
 hello.out
 p2check.tgz
