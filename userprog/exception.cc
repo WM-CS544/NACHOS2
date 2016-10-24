@@ -102,6 +102,7 @@ void SysClose();
 void SysFork();
 void SysJoin();
 void SysExit();
+void SysExec();
 #endif
 
 void
@@ -140,6 +141,10 @@ ExceptionHandler(ExceptionType which)
 				case SC_Fork:
 					DEBUG('a', "Fork, initiated by user program.\n");
 					SysFork();
+					break;
+				case SC_Exec:
+					DEBUG('a', "Exec, initiated by user program.\n");
+					SysExec();
 					break;
 				case SC_Join:
 					DEBUG('a', "Join, initiated by user program.\n");
@@ -419,11 +424,27 @@ SysExec()
 {
 	int retval = -1;
 
-	OpenFile *file;
-	char *name = new(std::nothrow) char[42];
+	OpenFile *executable;
+	char *fileName = new(std::nothrow) char[42];
 	int va = machine->ReadRegister(4);	//virtual address of name string
 
-	getStringFromUser(va, name, 42);
+	getStringFromUser(va, fileName, 42);
+
+
+	if ((executable = fileSystem->Open(fileName)) != NULL) {
+		currentThread->space->Exec(executable);
+		delete executable;
+		delete fileName;
+		currentThread->space->InitRegisters();
+		currentThread->space->RestoreState();
+		machine->Run();
+	}
+
+	//return if failure
+	delete executable;
+	delete fileName;
+	machine->WriteRegister(2, retval);
+	increasePC();
 }
 #endif
 

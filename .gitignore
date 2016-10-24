@@ -11,6 +11,8 @@ test/hellocons
 test/fromcons
 test/hellofile
 test/newfork
+test/parent_child
+test/kid
 fileio.out
 hello.out
 p2check.tgz

@@ -33,6 +33,8 @@ class AddrSpace {
     void RestoreState();		// info on a context switch 
 #ifdef CHANGED
 		AddrSpace(AddrSpace *parentSpace, int pid);
+		AddrSpace(OpenFile *executable, AddrSpace *parentSpace, int pid);
+		void Exec(OpenFile *executable);
 
 		unsigned int GetNumPages() {return numPages;};
 		ProcessControlBlock *GetProcessControlBlock();
