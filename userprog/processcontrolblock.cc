@@ -13,6 +13,18 @@ ProcessControlBlock::ProcessControlBlock(ProcessControlBlock *parent, FDSet *par
 ProcessControlBlock::~ProcessControlBlock()
 {
 	delete fdSet;
+	
+	ChildNode *curNode = childListHead;
+	ChildNode *prevNode = NULL;
+
+	while(curNode != NULL) {
+		curNode->child->SetParent(NULL); //tell child we left them
+		prevNode = curNode;
+		curNode = curNode->next;
+		//delete prevNode->child;	//should already be deleted
+		//delete prevNode->childDone; //can't delete this right now
+		delete prevNode;
+	}
 }
 
 FDSet*
@@ -33,6 +45,11 @@ ProcessControlBlock::SetFDSet(FDSet *parentSet)
 	delete fdSet;
 	fdSet = parentSet;
 } 
+
+void
+ProcessControlBlock::SetParent(ProcessControlBlock *newParent) {
+	parentBlock = newParent;
+}
 
 void
 ProcessControlBlock::AddChild(ProcessControlBlock *childBlock, int childPID, Semaphore *childSem)
@@ -60,9 +77,26 @@ ProcessControlBlock::AddChild(ProcessControlBlock *childBlock, int childPID, Sem
 }
 
 void
-ProcessControlBlock::DeleteChild(ProcessControlBlock *child)
+ProcessControlBlock::DeleteChild(int childPID)
 {
+	ChildNode *curNode = childListHead;
+	ChildNode *prevNode = NULL;
 
+	while (curNode != NULL) {
+		if (curNode->pid == childPID) {
+			if (prevNode == NULL) {	//head of list
+				childListHead = curNode->next;
+			} else {
+				prevNode->next = curNode->next;
+			}
+			//delete curNode->child;	//should already be deleted
+			//delete curNode->childDone; //can't delete this right now
+			delete curNode;
+			break;
+		}
+		prevNode = curNode;
+		curNode = curNode->next;
+	}
 }
 
 ChildNode*
@@ -74,8 +108,9 @@ ProcessControlBlock::GetChild(int childPID)
 		if (curNode->pid == childPID) {
 			return curNode;
 		}
+		curNode = curNode->next;
 	}
-	return curNode;	//will be NULL
+	return NULL;
 }
 
 #endif

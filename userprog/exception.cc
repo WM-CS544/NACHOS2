@@ -385,7 +385,8 @@ SysJoin()
 
 		retval = child->retval;
 
-		//TODO:remove child from list
+		//remove child from list
+		currentThread->space->GetProcessControlBlock()->DeleteChild(pid);
 	}
 
 	machine->WriteRegister(2, retval);
@@ -402,13 +403,27 @@ SysExit()
 	ProcessControlBlock *myBlock = currentThread->space->GetProcessControlBlock();
 	ProcessControlBlock *parentBlock = myBlock->GetParent();
 
-	
-	parentBlock->GetChild(myBlock->GetPID())->retval = status;	//tell parent return value
-	parentBlock->GetChild(myBlock->GetPID())->childDone->V();	//tell parent we are done
+	if (parentBlock != NULL) {	//parent still alive
+		parentBlock->GetChild(myBlock->GetPID())->retval = status;	//tell parent return value
+		parentBlock->GetChild(myBlock->GetPID())->childDone->V();	//tell parent we are done
+	}
 
 	//TODO:clean up everything
 
 	currentThread->Finish();
+}
+
+//int Exec(char *name);
+void
+SysExec()
+{
+	int retval = -1;
+
+	OpenFile *file;
+	char *name = new(std::nothrow) char[42];
+	int va = machine->ReadRegister(4);	//virtual address of name string
+
+	getStringFromUser(va, name, 42);
 }
 #endif
 

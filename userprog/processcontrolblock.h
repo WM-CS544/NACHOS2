@@ -21,9 +21,10 @@ class ProcessControlBlock {
 		ProcessControlBlock *GetParent() { return parentBlock; };
 
 		void SetFDSet(FDSet *parentSet);
+		void SetParent(ProcessControlBlock *newParent);
 
 		void AddChild(ProcessControlBlock *childBlock, int childPID, Semaphore *childSem);
-		void DeleteChild(ProcessControlBlock *child);
+		void DeleteChild(int childPID);
 		ChildNode *GetChild(int childPID);
 
 	private:

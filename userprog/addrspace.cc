@@ -213,6 +213,9 @@ AddrSpace::~AddrSpace()
 #ifndef USE_TLB
    delete pageTable;
 #endif
+#ifdef CHANGED
+	delete processControlBlock;
+#endif
 }
 
 //----------------------------------------------------------------------

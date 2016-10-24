@@ -23,6 +23,7 @@ class FDSet {
 		int AddFD(OpenFile *file);
 		OpenFile *GetFile(int fd);
 		int DeleteFD(int fd);
+		int NumOpen(int fd);
 		FDSet *CopyFDSet();
 
 	private:

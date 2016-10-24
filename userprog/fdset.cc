@@ -39,8 +39,12 @@ FDSet::~FDSet()
 {
 	for (std::size_t i=0; i < (sizeof(fdArray)/sizeof(fdArray[0])); i++) {
 		if (fdArray[i] != NULL) {
-			delete fdArray[i]->file;
-			delete fdArray[i];
+			if (fdArray[i]->numOpen == 1) { //only delete if only one open
+				delete fdArray[i]->file;
+				delete fdArray[i];
+			} else {
+				fdArray[i]->numOpen--;	//decrement number open
+			}
 		}
 	}	
 }
@@ -78,6 +82,17 @@ FDSet::GetFile(int fd)
 		}
 	}
 	return file;
+}
+
+int
+FDSet::NumOpen(int fd)
+{
+	if (fd < (int)(sizeof(fdArray)/sizeof(fdArray[0])) && fd >= 0) {
+		if (fdArray[fd] != NULL) {
+			return fdArray[fd]->numOpen;
+		}
+	}
+	return -1;
 }
 
 int
