@@ -211,6 +211,12 @@ AddrSpace::AddrSpace(OpenFile *executable)
 AddrSpace::~AddrSpace()
 {
 #ifndef USE_TLB
+#ifdef CHANGED
+	//free memory before deleting
+	for (unsigned int i=0;  i < NumPages; i++) {
+		memoryManager->ClearPage(pageTable[i].physicalPage);
+	}
+#endif
    delete pageTable;
 #endif
 #ifdef CHANGED
@@ -312,133 +318,6 @@ AddrSpace::AddrSpace(AddrSpace *parentSpace, int pid)
 	}
 
 	processControlBlock = new(std::nothrow) ProcessControlBlock(parentSpace->GetProcessControlBlock(), parentSpace->GetProcessControlBlock()->GetFDSet(), pid);
-}
-
-AddrSpace::AddrSpace(OpenFile *executable, AddrSpace *parentSpace, int pid)
-{
-    NoffHeader noffH;
-    unsigned int size;
-#ifndef USE_TLB
-    unsigned int i;
-#endif
-
-    executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
-    if ((noffH.noffMagic != NOFFMAGIC) && 
-		(WordToHost(noffH.noffMagic) == NOFFMAGIC))
-    	SwapHeader(&noffH);
-    ASSERT(noffH.noffMagic == NOFFMAGIC);
-
-// how big is address space?
-    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size 
-			+ UserStackSize;	// we need to increase the size
-						// to leave room for the stack
-    numPages = divRoundUp(size, PageSize);
-    size = numPages * PageSize;
-
-    ASSERT(numPages <= NumPhysPages);		// check we're not trying
-						// to run anything too big --
-						// at least until we have
-						// virtual memory
-
-    DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
-					numPages, size);
-#ifndef USE_TLB
-// first, set up the translation 
-    pageTable = new(std::nothrow) TranslationEntry[numPages];
-    for (i = 0; i < numPages; i++) {
-	pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
-	pageTable[i].physicalPage = memoryManager->NewPage();
-	pageTable[i].valid = true;
-	pageTable[i].use = false;
-	pageTable[i].dirty = false;
-	pageTable[i].readOnly = false;  // if the code segment was entirely on 
-					// a separate page, we could set its 
-					// pages to be read-only
-    }
-#endif    
-
-// zero out the entire address space, to zero the unitialized data segment 
-// and the stack segment
-		for (i = 0; i < numPages; i++) {
-			bzero(&(machine->mainMemory[GetPhysPageNum(i)*PageSize]), PageSize);
-		}
-
-// then, copy in the code and data segments into memory
-    if (noffH.code.size > 0) {
-        DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
-			noffH.code.virtualAddr, noffH.code.size);
-
-			//TODO: Maybe clean this up a little
-			for (i=(noffH.code.virtualAddr % PageSize); i < (unsigned int)(noffH.code.size + (noffH.code.virtualAddr % PageSize)); i+=(PageSize - (i % PageSize))) {
-				int physAddress = GetPhysAddress((noffH.code.virtualAddr + i) - (noffH.code.virtualAddr % PageSize));
-				unsigned int writtenSoFar = i - (noffH.code.virtualAddr % PageSize);
-				int location = noffH.code.inFileAddr + writtenSoFar;
-				/*fprintf(stderr, "-------------------------------\ncode\n");
-				fprintf(stderr, "i = %d\n", i);
-				fprintf(stderr, "phys = %d\n", physAddress);
-				fprintf(stderr, "writtenSoFar = %d\n", writtenSoFar);
-				fprintf(stderr, "location = %d\n", location);*/
-
-				//not at beginning of page
-				if (i % PageSize != 0) { //more data than can fit on page
-					if ((noffH.code.size - writtenSoFar) > (PageSize - (i % PageSize))) {
-						executable->ReadAt(&(machine->mainMemory[physAddress]),
-								(PageSize - (i % PageSize)), location);
-					} else {	//all data can fit on current page
-						executable->ReadAt(&(machine->mainMemory[physAddress]),
-								(noffH.code.size - writtenSoFar), location);
-					}
-
-				} else { //starting at beginning of page
-					if ((noffH.code.size - writtenSoFar) > PageSize) {	//more data than can fit on page
-						executable->ReadAt(&(machine->mainMemory[physAddress]),
-								PageSize, (noffH.code.inFileAddr + writtenSoFar));
-					} else {	//all data can fit on current page
-						executable->ReadAt(&(machine->mainMemory[physAddress]),
-								(noffH.code.size - writtenSoFar), location);
-					}
-				}
-			}
-    }
-    if (noffH.initData.size > 0) {
-        DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
-			noffH.initData.virtualAddr, noffH.initData.size);
-
-			//TODO: Maybe clean this up a little
-			for (i=(noffH.initData.virtualAddr % PageSize); i < (unsigned int)(noffH.initData.size + (noffH.initData.virtualAddr % PageSize)); i+=(PageSize - (i % PageSize))) {
-				int physAddress = GetPhysAddress((noffH.initData.virtualAddr + i) - (noffH.initData.virtualAddr % PageSize));
-				unsigned int writtenSoFar = i - (noffH.initData.virtualAddr % PageSize);
-				int location = noffH.initData.inFileAddr + writtenSoFar;
-				/*fprintf(stderr, "-------------------------------\ninitData\n");
-				fprintf(stderr, "i = %d\n", i);
-				fprintf(stderr, "phys = %d\n", physAddress);
-				fprintf(stderr, "writtenSoFar = %d\n", writtenSoFar);
-				fprintf(stderr, "location = %d\n", location);*/
-
-				//not at beginning of page
-				if (i % PageSize != 0) { //more data than can fit on page
-					if ((noffH.initData.size - writtenSoFar) > (PageSize - (i % PageSize))) {
-						executable->ReadAt(&(machine->mainMemory[physAddress]),
-								(PageSize - (i % PageSize)), location);
-					} else {	//all data can fit on current page
-						executable->ReadAt(&(machine->mainMemory[physAddress]),
-								(noffH.initData.size - writtenSoFar), location);
-					}
-
-				} else { //starting at beginning of page
-					if ((noffH.initData.size - writtenSoFar) > PageSize) {	//more data than can fit on page
-						executable->ReadAt(&(machine->mainMemory[physAddress]),
-								PageSize, location);
-					} else {	//all data can fit on current page
-						executable->ReadAt(&(machine->mainMemory[physAddress]),
-								(noffH.initData.size - writtenSoFar), location);
-					}
-				}
-			}
-    }
-
-	processControlBlock = new(std::nothrow) ProcessControlBlock(parentSpace->GetProcessControlBlock(), parentSpace->GetProcessControlBlock()->GetFDSet(), pid);
-
 }
 
 void
