@@ -55,10 +55,10 @@ main.o: ../threads/main.cc /usr/include/stdc-predef.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/list.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../userprog/synchconsole.h ../machine/console.h ../threads/synch.h \
+ ../userprog/synchconsole.h ../machine/console.h \
  ../userprog/memorymanager.h ../userprog/bitmap.h ../filesys/openfile.h \
  ../userprog/processmanager.h
 list.o: ../threads/list.cc /usr/include/stdc-predef.h \
@@ -111,13 +111,13 @@ scheduler.o: ../threads/scheduler.cc /usr/include/stdc-predef.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
  ../threads/system.h ../machine/interrupt.h ../threads/list.h \
  ../machine/stats.h ../machine/timer.h ../userprog/synchconsole.h \
- ../machine/console.h ../threads/synch.h ../userprog/memorymanager.h \
- ../userprog/bitmap.h ../filesys/openfile.h ../userprog/processmanager.h
+ ../machine/console.h ../userprog/memorymanager.h ../userprog/bitmap.h \
+ ../filesys/openfile.h ../userprog/processmanager.h
 synch.o: ../threads/synch.cc /usr/include/stdc-predef.h \
- ../threads/copyright.h ../threads/synch.h ../threads/thread.h \
+ ../threads/copyright.h ../threads/synch.h ../threads/list.h \
  ../threads/utility.h ../machine/sysdep.h ../threads/copyright.h \
  /usr/include/stdlib.h /usr/include/features.h /usr/include/sys/cdefs.h \
  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
@@ -136,20 +136,20 @@ synch.o: ../threads/synch.cc /usr/include/stdc-predef.h \
  /usr/include/wchar.h \
  /usr/lib64/gcc/x86_64-suse-linux/4.8/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h ../machine/machine.h ../threads/utility.h \
- ../machine/translate.h ../machine/disk.h ../userprog/addrspace.h \
- ../filesys/filesys.h ../filesys/openfile.h /usr/include/c++/4.8/new \
+ /usr/include/string.h /usr/include/c++/4.8/new \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/c++config.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/os_defines.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
- /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/list.h \
- ../threads/system.h ../threads/scheduler.h ../machine/interrupt.h \
- ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../userprog/synchconsole.h ../machine/console.h ../threads/synch.h \
- ../userprog/memorymanager.h ../userprog/bitmap.h ../filesys/openfile.h \
- ../userprog/processmanager.h
+ /usr/include/c++/4.8/bits/atomic_lockfree_defines.h ../threads/system.h \
+ ../threads/thread.h ../machine/machine.h ../threads/utility.h \
+ ../machine/translate.h ../machine/disk.h ../userprog/addrspace.h \
+ ../filesys/filesys.h ../filesys/openfile.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/scheduler.h ../machine/interrupt.h ../threads/list.h \
+ ../machine/stats.h ../machine/timer.h ../userprog/synchconsole.h \
+ ../machine/console.h ../userprog/memorymanager.h ../userprog/bitmap.h \
+ ../filesys/openfile.h ../userprog/processmanager.h
 synchlist.o: ../threads/synchlist.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/synchlist.h ../threads/list.h \
  ../threads/utility.h ../machine/sysdep.h ../threads/copyright.h \
@@ -170,16 +170,12 @@ synchlist.o: ../threads/synchlist.cc /usr/include/stdc-predef.h \
  /usr/include/wchar.h \
  /usr/lib64/gcc/x86_64-suse-linux/4.8/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h ../threads/synch.h ../threads/thread.h \
- ../machine/machine.h ../threads/utility.h ../machine/translate.h \
- ../machine/disk.h ../userprog/addrspace.h ../filesys/filesys.h \
- ../filesys/openfile.h /usr/include/c++/4.8/new \
+ /usr/include/string.h ../threads/synch.h /usr/include/c++/4.8/new \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/c++config.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/os_defines.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
- /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h
+ /usr/include/c++/4.8/bits/atomic_lockfree_defines.h
 system.o: ../threads/system.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/system.h ../threads/utility.h \
  ../machine/sysdep.h ../threads/copyright.h /usr/include/stdlib.h \
@@ -209,10 +205,10 @@ system.o: ../threads/system.cc /usr/include/stdc-predef.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/list.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../userprog/synchconsole.h ../machine/console.h ../threads/synch.h \
+ ../userprog/synchconsole.h ../machine/console.h \
  ../userprog/memorymanager.h ../userprog/bitmap.h ../filesys/openfile.h \
  ../userprog/processmanager.h
 thread.o: ../threads/thread.cc /usr/include/stdc-predef.h \
@@ -243,11 +239,11 @@ thread.o: ../threads/thread.cc /usr/include/stdc-predef.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
- ../threads/switch.h ../threads/synch.h ../threads/list.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/list.h ../threads/switch.h ../threads/synch.h \
  ../threads/system.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../userprog/synchconsole.h ../machine/console.h ../threads/synch.h \
+ ../userprog/synchconsole.h ../machine/console.h \
  ../userprog/memorymanager.h ../userprog/bitmap.h ../filesys/openfile.h \
  ../userprog/processmanager.h
 utility.o: ../threads/utility.cc /usr/include/stdc-predef.h \
@@ -299,10 +295,10 @@ threadtest.o: ../threads/threadtest.cc /usr/include/stdc-predef.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/list.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../userprog/synchconsole.h ../machine/console.h ../threads/synch.h \
+ ../userprog/synchconsole.h ../machine/console.h \
  ../userprog/memorymanager.h ../userprog/bitmap.h ../filesys/openfile.h \
  ../userprog/processmanager.h ../threads/synch.h ../threads/resmanager.h \
  ../threads/prodcon.h ../threads/elevator.h ../threads/traffic_manager.h
@@ -335,11 +331,11 @@ interrupt.o: ../machine/interrupt.cc /usr/include/stdc-predef.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/list.h ../threads/scheduler.h ../machine/interrupt.h \
  ../machine/stats.h ../machine/timer.h ../userprog/synchconsole.h \
- ../machine/console.h ../threads/synch.h ../userprog/memorymanager.h \
- ../userprog/bitmap.h ../filesys/openfile.h ../userprog/processmanager.h
+ ../machine/console.h ../userprog/memorymanager.h ../userprog/bitmap.h \
+ ../filesys/openfile.h ../userprog/processmanager.h
 sysdep.o: ../machine/sysdep.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h /usr/include/unistd.h /usr/include/features.h \
  /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
@@ -388,11 +384,11 @@ sysdep.o: ../machine/sysdep.cc /usr/include/stdc-predef.h \
  ../threads/thread.h ../machine/machine.h ../threads/utility.h \
  ../machine/translate.h ../machine/disk.h ../userprog/addrspace.h \
  ../filesys/filesys.h ../filesys/openfile.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/list.h ../threads/scheduler.h ../machine/interrupt.h \
  ../machine/stats.h ../machine/timer.h ../userprog/synchconsole.h \
- ../machine/console.h ../threads/synch.h ../userprog/memorymanager.h \
- ../userprog/bitmap.h ../filesys/openfile.h ../userprog/processmanager.h
+ ../machine/console.h ../userprog/memorymanager.h ../userprog/bitmap.h \
+ ../filesys/openfile.h ../userprog/processmanager.h
 stats.o: ../machine/stats.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/utility.h ../threads/copyright.h \
  ../machine/sysdep.h /usr/include/stdlib.h /usr/include/features.h \
@@ -442,15 +438,15 @@ timer.o: ../machine/timer.cc /usr/include/stdc-predef.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/list.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../userprog/synchconsole.h ../machine/console.h ../threads/synch.h \
+ ../userprog/synchconsole.h ../machine/console.h \
  ../userprog/memorymanager.h ../userprog/bitmap.h ../filesys/openfile.h \
  ../userprog/processmanager.h
 resmanager.o: ../threads/resmanager.cc /usr/include/stdc-predef.h \
  ../threads/resmanager.h ../threads/copyright.h ../threads/synch.h \
- ../threads/thread.h ../threads/utility.h ../machine/sysdep.h \
+ ../threads/list.h ../threads/utility.h ../machine/sysdep.h \
  ../threads/copyright.h /usr/include/stdlib.h /usr/include/features.h \
  /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
  /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
@@ -468,15 +464,12 @@ resmanager.o: ../threads/resmanager.cc /usr/include/stdc-predef.h \
  /usr/include/wchar.h \
  /usr/lib64/gcc/x86_64-suse-linux/4.8/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h ../machine/machine.h ../threads/utility.h \
- ../machine/translate.h ../machine/disk.h ../userprog/addrspace.h \
- ../filesys/filesys.h ../filesys/openfile.h /usr/include/c++/4.8/new \
+ /usr/include/string.h /usr/include/c++/4.8/new \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/c++config.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/os_defines.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
- /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/list.h
+ /usr/include/c++/4.8/bits/atomic_lockfree_defines.h
 prodcon.o: ../threads/prodcon.cc /usr/include/stdc-predef.h \
  /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
@@ -487,7 +480,7 @@ prodcon.o: ../threads/prodcon.cc /usr/include/stdc-predef.h \
  /usr/lib64/gcc/x86_64-suse-linux/4.8/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  ../threads/prodcon.h ../threads/copyright.h ../threads/synch.h \
- ../threads/thread.h ../threads/utility.h ../machine/sysdep.h \
+ ../threads/list.h ../threads/utility.h ../machine/sysdep.h \
  ../threads/copyright.h /usr/include/stdlib.h \
  /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h \
  /usr/include/endian.h /usr/include/bits/endian.h \
@@ -497,18 +490,15 @@ prodcon.o: ../threads/prodcon.cc /usr/include/stdc-predef.h \
  /usr/include/bits/sigset.h /usr/include/bits/time.h \
  /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h \
  /usr/include/alloca.h /usr/include/bits/stdlib-float.h \
- /usr/include/string.h ../machine/machine.h ../threads/utility.h \
- ../machine/translate.h ../machine/disk.h ../userprog/addrspace.h \
- ../filesys/filesys.h ../filesys/openfile.h /usr/include/c++/4.8/new \
+ /usr/include/string.h /usr/include/c++/4.8/new \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/c++config.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/os_defines.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
- /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/list.h
+ /usr/include/c++/4.8/bits/atomic_lockfree_defines.h
 elevator.o: ../threads/elevator.cc /usr/include/stdc-predef.h \
  ../threads/elevator.h ../threads/copyright.h ../threads/synch.h \
- ../threads/thread.h ../threads/utility.h ../machine/sysdep.h \
+ ../threads/list.h ../threads/utility.h ../machine/sysdep.h \
  ../threads/copyright.h /usr/include/stdlib.h /usr/include/features.h \
  /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
  /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
@@ -526,20 +516,20 @@ elevator.o: ../threads/elevator.cc /usr/include/stdc-predef.h \
  /usr/include/wchar.h \
  /usr/lib64/gcc/x86_64-suse-linux/4.8/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h ../machine/machine.h ../threads/utility.h \
- ../machine/translate.h ../machine/disk.h ../userprog/addrspace.h \
- ../filesys/filesys.h ../filesys/openfile.h /usr/include/c++/4.8/new \
+ /usr/include/string.h /usr/include/c++/4.8/new \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/c++config.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/os_defines.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
- /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/list.h \
- ../threads/system.h ../threads/scheduler.h ../machine/interrupt.h \
- ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../userprog/synchconsole.h ../machine/console.h ../threads/synch.h \
- ../userprog/memorymanager.h ../userprog/bitmap.h ../filesys/openfile.h \
- ../userprog/processmanager.h
+ /usr/include/c++/4.8/bits/atomic_lockfree_defines.h ../threads/system.h \
+ ../threads/thread.h ../machine/machine.h ../threads/utility.h \
+ ../machine/translate.h ../machine/disk.h ../userprog/addrspace.h \
+ ../filesys/filesys.h ../filesys/openfile.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/scheduler.h ../machine/interrupt.h ../threads/list.h \
+ ../machine/stats.h ../machine/timer.h ../userprog/synchconsole.h \
+ ../machine/console.h ../userprog/memorymanager.h ../userprog/bitmap.h \
+ ../filesys/openfile.h ../userprog/processmanager.h
 traffic_manager.o: ../threads/traffic_manager.cc \
  /usr/include/stdc-predef.h ../threads/traffic_manager.h \
  ../threads/copyright.h ../threads/system.h ../threads/utility.h \
@@ -570,10 +560,10 @@ traffic_manager.o: ../threads/traffic_manager.cc \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/list.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../userprog/synchconsole.h ../machine/console.h ../threads/synch.h \
+ ../userprog/synchconsole.h ../machine/console.h \
  ../userprog/memorymanager.h ../userprog/bitmap.h ../filesys/openfile.h \
  ../userprog/processmanager.h ../threads/synch.h ../threads/resmanager.h
 addrspace.o: ../userprog/addrspace.cc /usr/include/stdc-predef.h \
@@ -605,10 +595,10 @@ addrspace.o: ../userprog/addrspace.cc /usr/include/stdc-predef.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/list.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../userprog/synchconsole.h ../machine/console.h ../threads/synch.h \
+ ../userprog/synchconsole.h ../machine/console.h \
  ../userprog/memorymanager.h ../userprog/bitmap.h ../filesys/openfile.h \
  ../userprog/processmanager.h ../userprog/addrspace.h ../bin/noff.h
 bitmap.o: ../userprog/bitmap.cc /usr/include/stdc-predef.h \
@@ -640,10 +630,10 @@ bitmap.o: ../userprog/bitmap.cc /usr/include/stdc-predef.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/list.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../userprog/synchconsole.h ../machine/console.h ../threads/synch.h \
+ ../userprog/synchconsole.h ../machine/console.h \
  ../userprog/memorymanager.h ../userprog/processmanager.h
 exception.o: ../userprog/exception.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/system.h ../threads/copyright.h \
@@ -674,10 +664,10 @@ exception.o: ../userprog/exception.cc /usr/include/stdc-predef.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/list.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../userprog/synchconsole.h ../machine/console.h ../threads/synch.h \
+ ../userprog/synchconsole.h ../machine/console.h \
  ../userprog/memorymanager.h ../userprog/bitmap.h ../filesys/openfile.h \
  ../userprog/processmanager.h ../userprog/syscall.h
 progtest.o: ../userprog/progtest.cc /usr/include/stdc-predef.h \
@@ -709,10 +699,10 @@ progtest.o: ../userprog/progtest.cc /usr/include/stdc-predef.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/list.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../userprog/synchconsole.h ../machine/console.h ../threads/synch.h \
+ ../userprog/synchconsole.h ../machine/console.h \
  ../userprog/memorymanager.h ../userprog/bitmap.h ../filesys/openfile.h \
  ../userprog/processmanager.h ../userprog/addrspace.h
 console.o: ../machine/console.cc /usr/include/stdc-predef.h \
@@ -744,10 +734,10 @@ console.o: ../machine/console.cc /usr/include/stdc-predef.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/list.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../userprog/synchconsole.h ../machine/console.h ../threads/synch.h \
+ ../userprog/synchconsole.h ../machine/console.h \
  ../userprog/memorymanager.h ../userprog/bitmap.h ../filesys/openfile.h \
  ../userprog/processmanager.h
 machine.o: ../machine/machine.cc /usr/include/stdc-predef.h \
@@ -779,10 +769,10 @@ machine.o: ../machine/machine.cc /usr/include/stdc-predef.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/list.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../userprog/synchconsole.h ../machine/console.h ../threads/synch.h \
+ ../userprog/synchconsole.h ../machine/console.h \
  ../userprog/memorymanager.h ../userprog/bitmap.h ../filesys/openfile.h \
  ../userprog/processmanager.h
 mipssim.o: ../machine/mipssim.cc /usr/include/stdc-predef.h \
@@ -814,10 +804,10 @@ mipssim.o: ../machine/mipssim.cc /usr/include/stdc-predef.h \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h ../threads/system.h \
  ../threads/utility.h ../threads/thread.h ../machine/machine.h \
  ../userprog/addrspace.h ../filesys/filesys.h ../filesys/openfile.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/list.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../userprog/synchconsole.h ../machine/console.h ../threads/synch.h \
+ ../userprog/synchconsole.h ../machine/console.h \
  ../userprog/memorymanager.h ../userprog/bitmap.h ../filesys/openfile.h \
  ../userprog/processmanager.h
 translate.o: ../machine/translate.cc /usr/include/stdc-predef.h \
@@ -848,13 +838,13 @@ translate.o: ../machine/translate.cc /usr/include/stdc-predef.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h \
- ../threads/system.h ../threads/utility.h ../threads/thread.h \
- ../machine/machine.h ../threads/scheduler.h ../threads/list.h \
+ ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/synch.h \
+ ../threads/list.h ../threads/utility.h ../threads/system.h \
+ ../threads/thread.h ../machine/machine.h ../threads/scheduler.h \
  ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
  ../machine/timer.h ../userprog/synchconsole.h ../machine/console.h \
- ../threads/synch.h ../userprog/memorymanager.h ../userprog/bitmap.h \
- ../filesys/openfile.h ../userprog/processmanager.h
+ ../userprog/memorymanager.h ../userprog/bitmap.h ../filesys/openfile.h \
+ ../userprog/processmanager.h
 synchconsole.o: ../userprog/synchconsole.cc /usr/include/stdc-predef.h \
  ../userprog/synchconsole.h ../threads/copyright.h ../machine/console.h \
  ../threads/utility.h ../threads/copyright.h ../machine/sysdep.h \
@@ -875,19 +865,16 @@ synchconsole.o: ../userprog/synchconsole.cc /usr/include/stdc-predef.h \
  /usr/include/wchar.h \
  /usr/lib64/gcc/x86_64-suse-linux/4.8/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h ../threads/synch.h ../threads/thread.h \
- ../threads/utility.h ../machine/machine.h ../machine/translate.h \
- ../machine/disk.h ../userprog/addrspace.h ../filesys/filesys.h \
- ../filesys/openfile.h /usr/include/c++/4.8/new \
+ /usr/include/string.h ../threads/synch.h ../threads/list.h \
+ ../threads/utility.h /usr/include/c++/4.8/new \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/c++config.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/os_defines.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
- /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/list.h
+ /usr/include/c++/4.8/bits/atomic_lockfree_defines.h
 memorymanager.o: ../userprog/memorymanager.cc /usr/include/stdc-predef.h \
  ../userprog/memorymanager.h ../threads/copyright.h ../threads/synch.h \
- ../threads/copyright.h ../threads/thread.h ../threads/utility.h \
+ ../threads/copyright.h ../threads/list.h ../threads/utility.h \
  ../machine/sysdep.h /usr/include/stdlib.h /usr/include/features.h \
  /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
  /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
@@ -905,16 +892,13 @@ memorymanager.o: ../userprog/memorymanager.cc /usr/include/stdc-predef.h \
  /usr/include/wchar.h \
  /usr/lib64/gcc/x86_64-suse-linux/4.8/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/string.h ../machine/machine.h ../threads/utility.h \
- ../machine/translate.h ../machine/disk.h ../userprog/addrspace.h \
- ../filesys/filesys.h ../filesys/openfile.h /usr/include/c++/4.8/new \
+ /usr/include/string.h /usr/include/c++/4.8/new \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/c++config.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/os_defines.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
- /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
- ../userprog/processcontrolblock.h ../userprog/fdset.h ../threads/list.h \
- ../userprog/bitmap.h ../filesys/openfile.h
+ /usr/include/c++/4.8/bits/atomic_lockfree_defines.h ../userprog/bitmap.h \
+ ../threads/utility.h ../filesys/openfile.h
 processcontrolblock.o: ../userprog/processcontrolblock.cc \
  /usr/include/stdc-predef.h ../userprog/processcontrolblock.h \
  ../threads/copyright.h ../userprog/fdset.h ../filesys/filesys.h \
@@ -941,7 +925,8 @@ processcontrolblock.o: ../userprog/processcontrolblock.cc \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/os_defines.h \
  /usr/include/c++/4.8/x86_64-suse-linux/bits/cpu_defines.h \
  /usr/include/c++/4.8/exception \
- /usr/include/c++/4.8/bits/atomic_lockfree_defines.h
+ /usr/include/c++/4.8/bits/atomic_lockfree_defines.h ../threads/synch.h \
+ ../threads/list.h ../threads/utility.h
 fdset.o: ../userprog/fdset.cc /usr/include/stdc-predef.h \
  ../userprog/fdset.h ../threads/copyright.h ../filesys/filesys.h \
  ../filesys/openfile.h ../threads/utility.h ../threads/copyright.h \

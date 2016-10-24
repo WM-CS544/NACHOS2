@@ -213,7 +213,7 @@ AddrSpace::~AddrSpace()
 #ifndef USE_TLB
 #ifdef CHANGED
 	//free memory before deleting
-	for (unsigned int i=0;  i < NumPages; i++) {
+	for (unsigned int i=0;  i < numPages; i++) {
 		memoryManager->ClearPage(pageTable[i].physicalPage);
 	}
 #endif

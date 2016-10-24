@@ -22,7 +22,7 @@ ProcessControlBlock::~ProcessControlBlock()
 		prevNode = curNode;
 		curNode = curNode->next;
 		//delete prevNode->child;	//should already be deleted
-		//delete prevNode->childDone; //can't delete this right now
+		delete prevNode->childDone;
 		delete prevNode;
 	}
 }
@@ -90,7 +90,7 @@ ProcessControlBlock::DeleteChild(int childPID)
 				prevNode->next = curNode->next;
 			}
 			//delete curNode->child;	//should already be deleted
-			//delete curNode->childDone; //can't delete this right now
+			delete curNode->childDone;
 			delete curNode;
 			break;
 		}

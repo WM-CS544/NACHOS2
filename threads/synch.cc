@@ -102,20 +102,25 @@ Semaphore::V()
 // the test case in the network assignment won't work!
 Lock::Lock(const char* debugName) 
 {
+#ifdef CHANGED
 	name = debugName;
 	val = 1;
     queue = new(std::nothrow) List;
 	hasLock = NULL;
+#endif
 }
 
 Lock::~Lock() 
 {
+#ifdef CHANGED
 	delete queue;
+#endif
 }
 
 void 
 Lock::Acquire() 
 {
+#ifdef CHANGED
 	IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
 	while (!val) {
@@ -127,11 +132,13 @@ Lock::Acquire()
 	hasLock = currentThread;
 
 	(void) interrupt->SetLevel(oldLevel);
+#endif
 }
 
 void
 Lock::Release() 
 {
+#ifdef CHANGED
 	ASSERT(isHeldByCurrentThread());
 	Thread *thread;
 	IntStatus oldLevel = interrupt->SetLevel(IntOff);
@@ -144,28 +151,36 @@ Lock::Release()
 	hasLock = NULL;
 
 	(void) interrupt->SetLevel(oldLevel);
+#endif
 }
 
+#ifdef CHANGED
 bool
 Lock::isHeldByCurrentThread()
 {
 	return currentThread == hasLock;
 }
+#endif
 // --------------------Conditions------------------------------
 Condition::Condition(const char* debugName) 
 {
+#ifdef CHANGED
 	name = debugName;
     queue = new(std::nothrow) List;
+#endif
 }
 
 Condition::~Condition() 
 {
+#ifdef CHANGED
 	delete queue;
+#endif
 }
 
 void 
 Condition::Wait(Lock* conditionLock) 
 { 
+#ifdef  CHANGED
 	ASSERT(conditionLock->isHeldByCurrentThread());
 	IntStatus oldLevel = interrupt->SetLevel(IntOff);	//disable interupts to make 'atomic'
 	
@@ -175,11 +190,13 @@ Condition::Wait(Lock* conditionLock)
 	conditionLock->Acquire();							//once we wake up reaquire the lock
 
 	(void) interrupt->SetLevel(oldLevel);				//re-enable interrupts
+#endif
 }
 
 void 
 Condition::Signal(Lock* conditionLock) 
 {
+#ifdef CHANGED
 	ASSERT(conditionLock->isHeldByCurrentThread());
 	Thread *thread;
 	IntStatus oldLevel = interrupt->SetLevel(IntOff);
@@ -190,11 +207,13 @@ Condition::Signal(Lock* conditionLock)
 	}
 
 	(void) interrupt->SetLevel(oldLevel);
+#endif
 }
 
 void 
 Condition::Broadcast(Lock* conditionLock) 
 {
+#ifdef CHANGED
 	ASSERT(conditionLock->isHeldByCurrentThread());
 	Thread *thread;
 	IntStatus oldLevel = interrupt->SetLevel(IntOff);
@@ -206,4 +225,5 @@ Condition::Broadcast(Lock* conditionLock)
 	}
 
 	(void) interrupt->SetLevel(oldLevel);
+#endif
 }

@@ -5,8 +5,8 @@
 
 #include "copyright.h"
 #include "fdset.h"
+#include "synch.h"
 
-class Semaphore;
 struct ChildNode;
 
 class ProcessControlBlock {

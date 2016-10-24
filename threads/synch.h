@@ -18,7 +18,11 @@
 #define SYNCH_H
 
 #include "copyright.h"
+#ifndef CHANGED
 #include "thread.h"
+#else
+class Thread;
+#endif
 #include "list.h"
 #include <new>
 
@@ -81,9 +85,11 @@ class Lock {
   private:
     const char* name;				// for debugging
     // plus some other stuff you'll need to define
+#ifdef CHANGED
 	int val;
 	List *queue;
 	Thread *hasLock;
+#endif
 };
 
 // The following class defines a "condition variable".  A condition
@@ -136,6 +142,8 @@ class Condition {
   private:
     const char* name;
     // plus some other stuff you'll need to define
+#ifdef CHANGED
 	List *queue;
+#endif
 };
 #endif // SYNCH_H
