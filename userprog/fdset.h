@@ -5,6 +5,7 @@
 
 #include "copyright.h"
 #include "filesys.h"
+#include "synch.h"
 
 struct FDSetEntry {
 	
@@ -28,9 +29,11 @@ class FDSet {
 
 	private:
 		
+		static Lock *fdSetLock;	//one lock for everyone
 		FDSetEntry *fdArray[42];
 
 };
+
 
 #endif	//FD_SET_H
 #endif	//CHANGED

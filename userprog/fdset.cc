@@ -5,7 +5,10 @@
 FDSet::FDSet(FDSet *copySet)
 {
 
-	if (copySet == NULL) {
+	//lock = new(std::nothrow) Lock("fdset lock");
+
+	//set up fdArray
+	if (copySet == NULL) {	//new set
 
 		FDSetEntry *consoleIn = new(std::nothrow) FDSetEntry;
 		consoleIn->numOpen = 1;
@@ -24,7 +27,7 @@ FDSet::FDSet(FDSet *copySet)
 			}
 		}
 
-	} else {
+	} else {	//inherited fdArray
 		FDSetEntry **copyArray = copySet->GetArray();
 		for (std::size_t i=0; i < (sizeof(fdArray)/sizeof(fdArray[0])); i++) {
 			if (copyArray[i] != NULL) {
@@ -58,6 +61,8 @@ FDSet::GetArray()
 int
 FDSet::AddFD(OpenFile *file)
 {
+	fdSetLock->Acquire();
+
 	int fd = -1;
 	for (int i=0; i < (int)(sizeof(fdArray)/sizeof(fdArray[0])); i++) {
 		if (fdArray[i] == NULL) {
@@ -69,35 +74,49 @@ FDSet::AddFD(OpenFile *file)
 			break;
 		}
 	}
+
+	fdSetLock->Release();
+
 	return fd;
 }
 
 OpenFile*
 FDSet::GetFile(int fd)
 {
+	fdSetLock->Acquire();
+
 	OpenFile *file = NULL;
 	if (fd < (int)(sizeof(fdArray)/sizeof(fdArray[0])) && fd >= 0) {
 		if (fdArray[fd] != NULL) {
 			file = fdArray[fd]->file;
 		}
 	}
+
+	fdSetLock->Release();
+
 	return file;
 }
 
 int
 FDSet::NumOpen(int fd)
 {
+	
+	fdSetLock->Acquire();
+
 	if (fd < (int)(sizeof(fdArray)/sizeof(fdArray[0])) && fd >= 0) {
 		if (fdArray[fd] != NULL) {
+			fdSetLock->Release();
 			return fdArray[fd]->numOpen;
 		}
 	}
+	fdSetLock->Release();
 	return -1;
 }
 
 int
 FDSet::DeleteFD(int fd)
 {
+	fdSetLock->Acquire();
 	if (fd < (int)(sizeof(fdArray)/sizeof(fdArray[0])) && fd >= 0) {
 			if (fdArray[fd] != NULL) {
 				if (fdArray[fd]->numOpen == 1) { //delete file
@@ -109,9 +128,11 @@ FDSet::DeleteFD(int fd)
 					fdArray[fd]->numOpen--;
 					fdArray[fd] = NULL;
 				}
+				fdSetLock->Release();
 				return 1;
 			}
 	}
+	fdSetLock->Release();
 	return 0;
 }
 

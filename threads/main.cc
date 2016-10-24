@@ -163,6 +163,9 @@ main(int argc, char **argv)
 #include "utility.h"
 #include "system.h"
 
+//static variables
+Lock *FDSet::fdSetLock = new(std::nothrow) Lock("fdset lock");
+
 // External functions used by this file
 
 extern void ThreadTest(long), Copy(char *unixFile, char *nachosFile);
