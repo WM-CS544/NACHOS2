@@ -30,6 +30,7 @@ class ProcessControlBlock {
 	private:
 
 		int pid;
+		Lock *lock;
 		FDSet *fdSet;
 		ProcessControlBlock *parentBlock;
 		ChildNode *childListHead;
