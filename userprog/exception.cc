@@ -103,6 +103,7 @@ void SysFork();
 void SysJoin();
 void SysExit();
 void SysExec();
+void SysDup();
 #endif
 
 void
@@ -153,6 +154,10 @@ ExceptionHandler(ExceptionType which)
 				case SC_Exit:
 					DEBUG('a', "Exit, initiated by user program.\n");
 					SysExit();
+					break;
+				case SC_Dup:
+					DEBUG('a', "Dup, initiated by user program.\n");
+					SysDup();
 					break;
 #endif
 				default:
@@ -423,7 +428,6 @@ void
 SysExec()
 {
 	int retval = -1;
-
 	OpenFile *executable;
 	char *fileName = new(std::nothrow) char[42];
 	int va = machine->ReadRegister(4);	//virtual address of name string
@@ -443,6 +447,19 @@ SysExec()
 	//return if failure
 	delete executable;
 	delete fileName;
+	machine->WriteRegister(2, retval);
+	increasePC();
+}
+
+//OpenFileId Dup(OpenFileId fd);
+void
+SysDup()
+{
+	int retval;
+	OpenFileId fd = machine->ReadRegister(4);
+	
+	retval = currentThread->space->GetProcessControlBlock()->GetFDSet()->Dup(fd);
+
 	machine->WriteRegister(2, retval);
 	increasePC();
 }

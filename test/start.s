@@ -122,6 +122,16 @@ Fork:
 	j	$31
 	.end Fork
 
+#ifdef CHANGED
+	.globl Dup
+	.ent	Dup
+Dup:
+	addiu $2,$0,SC_Dup
+	syscall
+	j $31
+	.end Dup
+#endif
+
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main

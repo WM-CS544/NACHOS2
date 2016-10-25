@@ -136,4 +136,26 @@ FDSet::DeleteFD(int fd)
 	return 0;
 }
 
+int
+FDSet::Dup(int fd)
+{
+	fdSetLock->Acquire();
+
+	if (fd < (int)(sizeof(fdArray)/sizeof(fdArray[0])) && fd >= 0) {
+		if (fdArray[fd] != NULL) {
+			for (unsigned int i=0; i < sizeof(fdArray)/sizeof(fdArray[0]); i++) {
+				if (fdArray[i] == NULL) {
+					fdArray[fd]->numOpen++; //increase number open
+					fdArray[i] = fdArray[fd];	//duplicate
+					fdSetLock->Release();
+					return i;
+				}
+			}
+		}	
+	}
+
+	fdSetLock->Release();
+	return -1; //error 
+}
+
 #endif

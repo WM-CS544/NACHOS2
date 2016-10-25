@@ -25,6 +25,7 @@ class FDSet {
 		OpenFile *GetFile(int fd);
 		int DeleteFD(int fd);
 		int NumOpen(int fd);
+		int Dup(int fd);
 		FDSet *CopyFDSet();
 
 	private:

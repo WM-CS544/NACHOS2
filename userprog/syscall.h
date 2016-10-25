@@ -28,6 +28,9 @@
 #define SC_Write	7
 #define SC_Close	8
 #define SC_Fork		9
+#ifdef CHANGED
+#define SC_Dup		10
+#endif
 
 #ifndef IN_ASM
 
@@ -113,6 +116,11 @@ int Read(char *buffer, int size, OpenFileId id);
 
 /* Close the file, we're done reading and writing to it. */
 void Close(OpenFileId id);
+
+#ifdef CHANGED
+/*Copy file descriptor of given OpenFileId*/
+OpenFileId Dup(OpenFileId fd);
+#endif
 
 
 #endif /* IN_ASM */
