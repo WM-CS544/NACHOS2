@@ -34,7 +34,8 @@ CPP = /usr/bin/cpp -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR) -DCHANGED -nostartfiles
 
-all: halt shell matmult sort fileio fromcons hellocons hellofile newfork parent_child kid
+all: halt shell matmult sort fileio fromcons hellocons hellofile newfork parent_child kid \
+	seq_child deepfork deepkid1 deepkid2 share sharekid
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.s > strt.s
@@ -106,3 +107,40 @@ kid.o: kid.c
 kid: kid.o start.o
 	$(LD) $(LDFLAGS) start.o kid.o -o kid.coff
 	../bin/coff2noff kid.coff kid 
+
+seq_child.o: seq_child.c
+	$(CC) $(CFLAGS) -c seq_child.c
+seq_child: seq_child.o start.o
+	$(LD) $(LDFLAGS) start.o seq_child.o -o seq_child.coff
+	../bin/coff2noff seq_child.coff seq_child 
+
+deepfork.o: deepfork.c
+	$(CC) $(CFLAGS) -c deepfork.c
+deepfork: deepfork.o start.o
+	$(LD) $(LDFLAGS) start.o deepfork.o -o deepfork.coff
+	../bin/coff2noff deepfork.coff deepfork 
+
+deepkid1.o: deepkid1.c
+	$(CC) $(CFLAGS) -c deepkid1.c
+deepkid1: deepkid1.o start.o
+	$(LD) $(LDFLAGS) start.o deepkid1.o -o deepkid1.coff
+	../bin/coff2noff deepkid1.coff deepkid1 
+
+deepkid2.o: deepkid2.c
+	$(CC) $(CFLAGS) -c deepkid2.c
+deepkid2: deepkid2.o start.o
+	$(LD) $(LDFLAGS) start.o deepkid2.o -o deepkid2.coff
+	../bin/coff2noff deepkid2.coff deepkid2 
+
+share.o: share.c
+	$(CC) $(CFLAGS) -c share.c
+share: share.o start.o
+	$(LD) $(LDFLAGS) start.o share.o -o share.coff
+	../bin/coff2noff share.coff share 
+
+sharekid.o: sharekid.c
+	$(CC) $(CFLAGS) -c sharekid.c
+sharekid: sharekid.o start.o
+	$(LD) $(LDFLAGS) start.o sharekid.o -o sharekid.coff
+	../bin/coff2noff sharekid.coff sharekid 
+

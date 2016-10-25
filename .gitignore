@@ -13,6 +13,12 @@ test/hellofile
 test/newfork
 test/parent_child
 test/kid
+test/deepfork
+test/deepkid1
+test/deepkid2
+test/seq_child
+test/share
+test/sharekid
 fileio.out
 hello.out
 p2check.tgz
