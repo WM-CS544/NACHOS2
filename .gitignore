@@ -19,6 +19,7 @@ test/deepkid2
 test/seq_child
 test/share
 test/sharekid
+test/maxfork
 fileio.out
 hello.out
 p2check.tgz
