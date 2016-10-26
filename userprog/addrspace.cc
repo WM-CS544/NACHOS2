@@ -79,10 +79,14 @@ AddrSpace::AddrSpace(OpenFile *executable)
     numPages = divRoundUp(size, PageSize);
     size = numPages * PageSize;
 
+#ifndef CHANGED
     ASSERT(numPages <= NumPhysPages);		// check we're not trying
 						// to run anything too big --
 						// at least until we have
 						// virtual memory
+#else
+		ASSERT(numPages <= (unsigned int) memoryManager->NumPagesFree());
+#endif
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
 					numPages, size);
@@ -349,10 +353,8 @@ AddrSpace::Exec(OpenFile *executable) {
 	numPages = divRoundUp(size, PageSize);
 	size = numPages * PageSize;
 
-	ASSERT(numPages <= NumPhysPages);		// check we're not trying
-					// to run anything too big --
-					// at least until we have
-					// virtual memory
+	//Make sure not more than we have room for
+	ASSERT(numPages <= (unsigned int) memoryManager->NumPagesFree());
 
 	DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
 				numPages, size);
