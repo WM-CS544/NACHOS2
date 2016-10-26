@@ -280,11 +280,10 @@ SysRead()
 
 	// GetFile should return null on error.  In this case do nothing
 	if ((file = currentThread->space->GetProcessControlBlock()->GetFDSet()->GetFile(fd)) != NULL) {
-
-		if (fd == ConsoleInput) {
+		if ((int) file == 1) {	//1 = cookie for console input
 			bytesRead = synchConsole->Read(buffer, size);
 			writeDataToUser(va, buffer, size);
-		} else if (fd == ConsoleOutput) {
+		} else if ((int) file == 2) {	//2 = cookie for console output
 			//can't read from output - do nothing
 		} else {
 			bytesRead = file->Read(buffer, size);
@@ -318,9 +317,9 @@ SysWrite()
 
 	// GetFile should return null on error.  In this case do nothing
 	if ((file = currentThread->space->GetProcessControlBlock()->GetFDSet()->GetFile(fd)) != NULL) {
-		if (fd == ConsoleInput) {
+		if ((int) file == 1) { //1 = cookie for console input
 			//can't write to input
-		} else if (fd == ConsoleOutput) {
+		} else if ((int) file == 2) {	//2 = cookie for console output
 			synchConsole->Write(buffer, size);
 		} else {
 			file->Write(buffer, size);
@@ -366,6 +365,7 @@ SysFork()
 	//create new thread
 	SpaceId newPID = processManager->NewProcess();
 	Thread *newThread = new(std::nothrow) Thread("forked thread");		
+	
 	AddrSpace *newSpace = new(std::nothrow) AddrSpace(currentThread->space, newPID);
 	newThread->space = newSpace;
 
