@@ -3,6 +3,8 @@
 #ifndef PROCESS_MANAGER_H
 #define PROCESS_MANAGER_H
 
+#include "synch.h"
+
 class ProcessManager {
 	
 	public:
@@ -14,6 +16,7 @@ class ProcessManager {
 
 	private:
 
+		Lock *lock;
 		int numProcesses;
 };
 

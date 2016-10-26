@@ -4,18 +4,23 @@
 
 ProcessManager::ProcessManager()
 {
+	lock = new(std::nothrow) Lock("process manager lock");
 	numProcesses = 1;
 }
 
 ProcessManager::~ProcessManager()
 {
+	delete lock;
 }
 
 int
 ProcessManager::NewProcess()
 {
-	numProcesses++;
-	return numProcesses;
+	lock->Acquire();
+
+	int num = ++numProcesses;
+	lock->Release();
+	return num;
 }
 
 #endif
