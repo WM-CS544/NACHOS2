@@ -179,7 +179,7 @@ getStringFromUser(int va, char *string, int length)
 {
 	// iterate through length of the string until a null byte is reached, then break
 	for (int i=0; i<length; i++) {
-		string[i] = currentThread->space->ReadByte(va++);	//translation done in memoryManager
+		string[i] = currentThread->space->ReadByte(va++);	//translation done in addrspace
 		if (string[i] == '\0') {
 			break;
 		}
@@ -193,7 +193,7 @@ void
 getDataFromUser(int va, char *buffer, int length)
 {
 	for (int i=0; i<length; i++) {
-		buffer[i] = currentThread->space->ReadByte(va++); //translation done in memoryManager
+		buffer[i] = currentThread->space->ReadByte(va++); //translation done in addrspace
 	}	
 }
 
@@ -203,6 +203,22 @@ writeDataToUser(int va, char *buffer, int length)
 	for (int i=0; i < length; i++) {
 		currentThread->space->WriteByte(va++, buffer[i]);
 	}
+}
+
+void
+writeCharToUser(int va, char ch) {
+	currentThread->space->WriteByte(va, ch);
+}
+
+int
+getPointerFromUser(int va) {
+	//assumes 4 byte pointer little endian
+	char newVA[4];
+	for (int i=0; i < 4; i++) {
+		newVA[i] = currentThread->space->ReadByte(va++); //translation done in addrspace
+	}
+	unsigned int result = ((newVA[3] & 255) << 24) | ((newVA[2] & 255) << 16) | ((newVA[1] & 255) << 8) | (newVA[0] & 255);
+	return result;
 }
 
 // increments the program counter by 4 bytes
@@ -423,30 +439,83 @@ SysExit()
 	currentThread->Finish();
 }
 
-//int Exec(char *name);
+//int Exec(char *name, char *args[]);
 void
 SysExec()
 {
 	int retval = -1;
 	OpenFile *executable;
 	char *fileName = new(std::nothrow) char[42];
-	int va = machine->ReadRegister(4);	//virtual address of name string
+	int nameVA = machine->ReadRegister(4);	//virtual address of name string
 
-	getStringFromUser(va, fileName, 42);
+	getStringFromUser(nameVA, fileName, 42); //get filename string
 
+	char *args[5];
+	for (unsigned int i=0; i < sizeof(args)/sizeof(args[0]); i++) {
+		args[i] = new(std::nothrow) char[42];
+	}
+	int argsVA = machine->ReadRegister(5);	//virtual address of arg array
+	int numArgs = 0;
 
+	//get arguments
+	int stringVA = getPointerFromUser(argsVA);
+	while(stringVA != '\0' && numArgs < 5) {
+		getStringFromUser(stringVA, args[numArgs++], 42);
+		argsVA+=4;
+		stringVA = getPointerFromUser(argsVA);
+	}
+
+	//can open file
 	if ((executable = fileSystem->Open(fileName)) != NULL) {
 		currentThread->space->Exec(executable);
-		delete executable;
-		delete fileName;
 		currentThread->space->InitRegisters();
 		currentThread->space->RestoreState();
+
+		//hide args "above" stack
+		int sp = machine->ReadRegister(StackReg);
+		int argv[numArgs];
+		for (int i=0; i < numArgs; i++) {
+			int len = strlen(args[i]) + 1;
+			sp -= len;
+			//write string
+			for (int x=0; x < len; x++) {
+				writeCharToUser((sp+x), args[i][x]);			
+			}
+			//store pointer
+			argv[i] = sp;
+		}
+		//align pointer on 4 byte boundrary	
+		sp = sp &~3;	//stack goes top down
+
+		//write pointers
+		sp -= sizeof(int) * numArgs;
+		for (int i=0; i < numArgs; i++) {
+			*(unsigned int *) &machine->mainMemory[currentThread->space->GetPhysAddress(sp + i*4)] = WordToMachine((unsigned int) argv[i]);
+		}
+
+		//write values to registers
+		machine->WriteRegister(4, numArgs);
+		machine->WriteRegister(5, sp);
+		machine->WriteRegister(StackReg, sp-8);
+
+		//cleanup
+		for (unsigned int i=0; i < sizeof(args)/sizeof(args[0]); i++) {
+			delete args[i];
+		}
+		delete executable;
+		delete fileName;
+
+		//start running user program
 		machine->Run();
 	}
 
-	//return if failure
+	//cleanup
+	for (unsigned int i=0; i < sizeof(args)/sizeof(args[0]); i++) {
+		delete args[i];
+	}
 	delete executable;
 	delete fileName;
+	//return if failure
 	machine->WriteRegister(2, retval);
 	increasePC();
 }

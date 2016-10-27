@@ -20,6 +20,9 @@ test/seq_child
 test/share
 test/sharekid
 test/maxfork
+test/arg_seq_child
+test/argtest
+test/argkid
 fileio.out
 hello.out
 p2check.tgz

@@ -35,7 +35,7 @@ INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR) -DCHANGED -nostartfiles
 
 all: halt shell matmult sort fileio fromcons hellocons hellofile newfork parent_child kid \
-	seq_child deepfork deepkid1 deepkid2 share sharekid maxfork
+	seq_child deepfork deepkid1 deepkid2 share sharekid maxfork arg_seq_child argtest argkid
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.s > strt.s
@@ -149,4 +149,22 @@ maxfork.o: maxfork.c
 maxfork: maxfork.o start.o
 	$(LD) $(LDFLAGS) start.o maxfork.o -o maxfork.coff
 	../bin/coff2noff maxfork.coff maxfork 
+
+arg_seq_child.o: arg_seq_child.c
+	$(CC) $(CFLAGS) -c arg_seq_child.c
+arg_seq_child: arg_seq_child.o start.o
+	$(LD) $(LDFLAGS) start.o arg_seq_child.o -o arg_seq_child.coff
+	../bin/coff2noff arg_seq_child.coff arg_seq_child 
+
+argtest.o: argtest.c
+	$(CC) $(CFLAGS) -c argtest.c
+argtest: argtest.o start.o
+	$(LD) $(LDFLAGS) start.o argtest.o -o argtest.coff
+	../bin/coff2noff argtest.coff argtest 
+
+argkid.o: argkid.c
+	$(CC) $(CFLAGS) -c argkid.c
+argkid: argkid.o start.o
+	$(LD) $(LDFLAGS) start.o argkid.o -o argkid.coff
+	../bin/coff2noff argkid.coff argkid 
 
