@@ -23,6 +23,8 @@ test/maxfork
 test/arg_seq_child
 test/argtest
 test/argkid
+test/cat
+test/cp
 fileio.out
 hello.out
 p2check.tgz
