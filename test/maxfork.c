@@ -15,7 +15,7 @@ main()
   SpaceId kid[NUMKIDS];
   int i, j, joinval, tmp;
 	char *args[1];
-	args[1] = '\0';
+	args[0] = '\0';
 
   print("PARENT exists\n");
 

@@ -6,21 +6,29 @@ main()
 	SpaceId newProc;
 	OpenFileId input = ConsoleInput;
 	OpenFileId output = ConsoleOutput;
-	char prompt[2], ch, buffer[60], redirBuffer[60];
-	int i, redir, redirOut, redirIn;
+	char prompt[2], ch, buffer[60], redirBuffer[60], *args[5];
+	char arg1[60], arg2[60], arg3[60], arg4[60], arg5[60];
+	int i, x, redir, redirOut, redirIn, argsNow, argsIndex;
 
 	prompt[0] = '-';
 	prompt[1] = '-';
 
 	while( 1 ) {
 		Write(prompt, 2, output);
+		/*initialize variables*/
+		args[0] = arg1;
+		args[1] = arg2;
+		args[2] = arg3;
+		args[3] = arg4;
+		args[4] = arg5;
 		i = 0;
-		ch = '\0';
 		redir= 0;
 		redirOut = 0;
 		redirIn  = 0;
+		argsNow = -1;
+		argsIndex = 0;
+		Read(&ch, 1, input);
 		while (i < 60 && ch != '\n' && redir < 60) {
-			Read(&ch, 1, input);
 			if (ch == '>') {
 				redirOut = 1;
 			} else if (ch == '<') {
@@ -28,9 +36,22 @@ main()
 			} else {
 				/*have not seen any redirection yet*/
 				if (!redirIn && !redirOut) {
-					if (ch != ' ') {
-						buffer[i] = ch;
-						i++;
+					if (argsNow >= 0) {
+						if (ch != ' ') { 
+							args[argsNow][argsIndex] = ch;
+							argsIndex++;
+						} else {
+							args[argsNow][argsIndex] = '\0';
+							argsNow++;
+							argsIndex=0;
+						}
+					} else {
+						if (ch != ' ') {
+							buffer[i] = ch;
+							i++;
+						} else { /*now looking at arguments*/
+							argsNow++;
+						}
 					}
 				/*we have seen redirection*/
 				} else {
@@ -40,14 +61,19 @@ main()
 					}
 				}
 			}
+			/*read next character*/
+			Read(&ch, 1, input);
 		}
-
 		/*add null byte to strings*/
-		if (redirOut || redirIn) {
-			buffer[i] = '\0';
-			redirBuffer[--redir] = '\0';
+		args[argsNow][argsIndex] = '\0';
+		buffer[i] = '\0';
+		redirBuffer[redir] = '\0';
+
+		/*last argument in array is null*/
+		if (!redirOut && !redirIn) {
+			args[argsNow+1] = (char *)0;
 		} else {
-			buffer[--i] = '\0';
+			args[argsNow] = (char *)0;
 		}
 
 		if( i > 0 ) {
@@ -75,7 +101,7 @@ main()
 					}
 				}
 				/*start command*/
-				Exec(buffer);
+				Exec(buffer, args);
 			/*parent*/
 			} else {
 				Join(newProc);

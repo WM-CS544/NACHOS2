@@ -12,7 +12,7 @@ main(int argc, char **argv)
 
   int i,j;
   for (i=0; i<10000; i++) j++ ;
-
+	
   for (i=0; i<argc; i++) {
     prints("Arg[",ConsoleOutput);
     printd(i,ConsoleOutput);

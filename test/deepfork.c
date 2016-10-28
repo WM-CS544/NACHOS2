@@ -12,10 +12,12 @@ main()
 
   SpaceId kid;
   int joinval;
+	char *args[1];
+	args[0] = '\0';
 
   print("PARENT exists\n");
   if ((kid=Fork()) == 0) {
-    Exec("deepkid1");
+    Exec("deepkid1", args);
     print("ERROR: exec failed\n");
     Halt();
   }

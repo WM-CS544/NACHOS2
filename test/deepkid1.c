@@ -11,13 +11,15 @@ main()
 {
   int i, joinval, tmp;
   SpaceId kid;
+	char *args[1];
+	args[0] = '\0';
 
   for (i=0; i<100000; i++) tmp++;
 
   /* loop to delay kid initially */
 
   if ((kid=Fork()) == 0) {
-      Exec("deepkid2");
+      Exec("deepkid2", args);
       print("ERROR: exec failed in kid\n");
       Exit(100);
   }
