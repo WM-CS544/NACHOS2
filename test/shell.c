@@ -9,6 +9,7 @@ main()
 	char prompt[2], ch, buffer[60], redirBuffer[60], *args[5];
 	char arg1[60], arg2[60], arg3[60], arg4[60], arg5[60];
 	int i, x, redir, redirOut, redirIn, argsNow, argsIndex;
+	int comment;
 
 	prompt[0] = '-';
 	prompt[1] = '-';
@@ -27,37 +28,43 @@ main()
 		redirIn  = 0;
 		argsNow = 0;
 		argsIndex = 0;
+		comment = 0;
 		Read(&ch, 1, input);
 		while (i < 60 && ch != '\n' && redir < 60) {
-			if (ch == '>') {
-				redirOut = 1;
-			} else if (ch == '<') {
-				redirIn = 1;
-			} else {
-				/*have not seen any redirection yet*/
-				if (!redirIn && !redirOut) {
-					if (argsNow > 0) {
-						if (ch != ' ') { 
-							args[argsNow][argsIndex] = ch;
-							argsIndex++;
+			if (!comment) {
+				if (ch == '#') {
+					comment = 1;
+				}
+				if (ch == '>') {
+					redirOut = 1;
+				} else if (ch == '<') {
+					redirIn = 1;
+				} else {
+					/*have not seen any redirection yet*/
+					if (!redirIn && !redirOut) {
+						if (argsNow > 0) {
+							if (ch != ' ') { 
+								args[argsNow][argsIndex] = ch;
+								argsIndex++;
+							} else {
+								args[argsNow][argsIndex] = '\0';
+								argsNow++;
+								argsIndex=0;
+							}
 						} else {
-							args[argsNow][argsIndex] = '\0';
-							argsNow++;
-							argsIndex=0;
+							if (ch != ' ') {
+								buffer[i] = ch;
+								i++;
+							} else { /*now looking at arguments*/
+								argsNow++;
+							}
 						}
+					/*we have seen redirection*/
 					} else {
 						if (ch != ' ') {
-							buffer[i] = ch;
-							i++;
-						} else { /*now looking at arguments*/
-							argsNow++;
+							redirBuffer[redir] = ch;
+							redir++;
 						}
-					}
-				/*we have seen redirection*/
-				} else {
-					if (ch != ' ') {
-						redirBuffer[redir] = ch;
-						redir++;
 					}
 				}
 			}
