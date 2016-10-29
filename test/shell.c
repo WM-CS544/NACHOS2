@@ -16,7 +16,7 @@ main()
 	while( 1 ) {
 		Write(prompt, 2, output);
 		/*initialize variables*/
-		args[0] = arg1;
+		args[0] = buffer;
 		args[1] = arg2;
 		args[2] = arg3;
 		args[3] = arg4;
@@ -25,7 +25,7 @@ main()
 		redir= 0;
 		redirOut = 0;
 		redirIn  = 0;
-		argsNow = -1;
+		argsNow = 0;
 		argsIndex = 0;
 		Read(&ch, 1, input);
 		while (i < 60 && ch != '\n' && redir < 60) {
@@ -36,7 +36,7 @@ main()
 			} else {
 				/*have not seen any redirection yet*/
 				if (!redirIn && !redirOut) {
-					if (argsNow >= 0) {
+					if (argsNow > 0) {
 						if (ch != ' ') { 
 							args[argsNow][argsIndex] = ch;
 							argsIndex++;
@@ -65,7 +65,9 @@ main()
 			Read(&ch, 1, input);
 		}
 		/*add null byte to strings*/
-		args[argsNow][argsIndex] = '\0';
+		if (argsIndex != 0) {
+			args[argsNow][argsIndex] = '\0';
+		}
 		buffer[i] = '\0';
 		redirBuffer[redir] = '\0';
 
