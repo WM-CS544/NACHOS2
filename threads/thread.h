@@ -125,6 +125,9 @@ class Thread {
   public:
 #ifdef CHANGED
 		int userRegisters[NumTotalRegs];
+		int forkRegisters[NumTotalRegs];
+		void SaveRegsForFork();
+		void RestoreRegsForFork();
 #endif
     void SaveUserState();		// save user-level register state
     void RestoreUserState();		// restore user-level register state

@@ -368,7 +368,7 @@ SysClose()
 void
 StartForked(int arg)
 {
-	currentThread->RestoreUserState();
+	currentThread->RestoreRegsForFork();
 	currentThread->space->RestoreState();
 	machine->WriteRegister(2, 0);	//child gets 0
 	machine->Run();
@@ -392,7 +392,7 @@ SysFork()
 
 	//increase PC before saving registers to new thread
 	increasePC();
-	newThread->SaveUserState();
+	newThread->SaveRegsForFork();
 	newThread->Fork(StartForked, (int) newThread);	//fork off new thread
 
 	machine->WriteRegister(2, newPID);	//parent gets child PID
@@ -404,7 +404,6 @@ SysJoin()
 {
 	SpaceId pid = machine->ReadRegister(4);
 	int retval = -1;
-
 	ChildNode *child = currentThread->space->GetProcessControlBlock()->GetChild(pid);
 	if (child != NULL) {
 		child->childDone->P();	//wait until child is done
@@ -414,7 +413,6 @@ SysJoin()
 		//remove child from list
 		currentThread->space->GetProcessControlBlock()->DeleteChild(pid);
 	}
-
 	machine->WriteRegister(2, retval);
 	increasePC();
 }
@@ -443,6 +441,7 @@ SysExit()
 void
 SysExec()
 {
+
 	int retval = -1;
 	OpenFile *executable;
 	char *fileName = new(std::nothrow) char[42];

@@ -322,4 +322,20 @@ Thread::RestoreUserState()
     for (int i = 0; i < NumTotalRegs; i++)
 	machine->WriteRegister(i, userRegisters[i]);
 }
+
+#ifdef CHANGED
+void
+Thread::SaveRegsForFork()
+{
+    for (int i = 0; i < NumTotalRegs; i++)
+	forkRegisters[i] = machine->ReadRegister(i);
+}
+
+void
+Thread::RestoreRegsForFork()
+{
+    for (int i = 0; i < NumTotalRegs; i++)
+	machine->WriteRegister(i, forkRegisters[i]);
+}
+#endif //CHANGED
 #endif
