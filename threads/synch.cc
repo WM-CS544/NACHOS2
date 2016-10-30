@@ -121,6 +121,7 @@ void
 Lock::Acquire() 
 {
 #ifdef CHANGED
+	DEBUG('s', "Acquiring lock %s\n", name);
 	IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
 	while (!val) {
@@ -139,6 +140,7 @@ void
 Lock::Release() 
 {
 #ifdef CHANGED
+	DEBUG('s', "Releasing lock %s\n", name);
 	ASSERT(isHeldByCurrentThread());
 	Thread *thread;
 	IntStatus oldLevel = interrupt->SetLevel(IntOff);
