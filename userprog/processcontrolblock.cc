@@ -15,6 +15,7 @@ ProcessControlBlock::ProcessControlBlock(ProcessControlBlock *parent, FDSet *par
 ProcessControlBlock::~ProcessControlBlock()
 {
 	delete fdSet;
+	delete lock;
 	
 	ChildNode *curNode = childListHead;
 	ChildNode *prevNode = NULL;
@@ -44,27 +45,28 @@ ProcessControlBlock::GetPID()
 void
 ProcessControlBlock::SetFDSet(FDSet *parentSet)
 {
-	lock->Acquire();
+	//lock->Acquire();
 
 	delete fdSet;
 	fdSet = parentSet;
 
-	lock->Release();
+	//lock->Release();
 } 
 
 void
-ProcessControlBlock::SetParent(ProcessControlBlock *newParent) {
-	lock->Acquire();
+ProcessControlBlock::SetParent(ProcessControlBlock *newParent) 
+{
+	//lock->Acquire();
 
 	parentBlock = newParent;
 
-	lock->Release();
+	//lock->Release();
 }
 
 void
 ProcessControlBlock::AddChild(ProcessControlBlock *childBlock, int childPID, Semaphore *childSem)
 {
-	lock->Acquire();
+	//lock->Acquire();
 
 	ChildNode *newNode = new(std::nothrow) ChildNode;
 	newNode->retval = -1;
@@ -87,13 +89,13 @@ ProcessControlBlock::AddChild(ProcessControlBlock *childBlock, int childPID, Sem
 		prevNode->next = newNode;
 	}
 
-	lock->Release();
+	//lock->Release();
 }
 
 void
 ProcessControlBlock::DeleteChild(int childPID)
 {
-	lock->Acquire();
+	//lock->Acquire();
 
 	ChildNode *curNode = childListHead;
 	ChildNode *prevNode = NULL;
@@ -114,25 +116,25 @@ ProcessControlBlock::DeleteChild(int childPID)
 		curNode = curNode->next;
 	}
 
-	lock->Release();
+	//lock->Release();
 }
 
 ChildNode*
 ProcessControlBlock::GetChild(int childPID)
 {
-	lock->Acquire();
+	//lock->Acquire();
 
 	ChildNode *curNode = childListHead;
 
 	while (curNode != NULL) {
 		if (curNode->pid == childPID) {
-			lock->Release();
+			//lock->Release();
 			return curNode;
 		}
 		curNode = curNode->next;
 	}
 
-	lock->Release();
+	//lock->Release();
 
 	return NULL;
 }
