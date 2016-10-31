@@ -51,6 +51,7 @@ extern PostOffice* postOffice;
 #endif
 
 #ifdef CHANGED
+#ifdef USER_PROGRAM
 #include "synchconsole.h"
 extern SynchConsole *synchConsole;
 
@@ -60,6 +61,10 @@ extern MemoryManager *memoryManager;
 
 #include "processmanager.h"
 extern ProcessManager *processManager;
+
+#include "filemanager.h"
+extern FileManager *fileManager;
+#endif
 #endif
 
 #endif // SYSTEM_H

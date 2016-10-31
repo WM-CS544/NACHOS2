@@ -90,7 +90,8 @@ USERPROG_H = ../userprog/addrspace.h\
 	../userprog/memorymanager.h\
 	../userprog/processcontrolblock.h\
 	../userprog/fdset.h\
-	../userprog/processmanager.h
+	../userprog/processmanager.h\
+	../userprog/filemanager.h
 
 USERPROG_C = ../userprog/addrspace.cc\
 	../userprog/bitmap.cc\
@@ -104,11 +105,12 @@ USERPROG_C = ../userprog/addrspace.cc\
 	../userprog/memorymanager.cc\
 	../userprog/processcontrolblock.cc\
 	../userprog/fdset.cc\
-	../userprog/processmanager.cc
+	../userprog/processmanager.cc\
+	../userprog/filemanager.cc
 
 USERPROG_O = addrspace.o bitmap.o exception.o progtest.o console.o machine.o \
 	mipssim.o translate.o synchconsole.o memorymanager.o processcontrolblock.o \
-	fdset.o processmanager.o
+	fdset.o processmanager.o filemanager.o
 
 VM_H = ../filesys/synchdisk.h \
         ../machine/disk.h

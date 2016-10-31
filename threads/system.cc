@@ -19,14 +19,6 @@ Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
 					// for invoking context switches
 
-#ifdef CHANGED
-SynchConsole *synchConsole;
-
-MemoryManager *memoryManager;
-
-ProcessManager *processManager;
-#endif
-
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
 #endif
@@ -36,6 +28,15 @@ SynchDisk   *synchDisk;
 #endif
 
 #ifdef USER_PROGRAM	// requires either FILESYS or FILESYS_STUB
+#ifdef CHANGED
+SynchConsole *synchConsole;
+
+MemoryManager *memoryManager;
+
+ProcessManager *processManager;
+
+FileManager *fileManager;
+#endif
 Machine *machine;	// user program memory and registers
 #endif
 
@@ -157,7 +158,6 @@ Initialize(int argc, char **argv)
 
 #ifdef USER_PROGRAM
     machine = new(std::nothrow) Machine(debugUserProg);	// this must come first
-#endif
 
 #ifdef CHANGED
 		synchConsole = new(std::nothrow) SynchConsole(NULL, NULL);
@@ -165,6 +165,9 @@ Initialize(int argc, char **argv)
 		memoryManager = new(std::nothrow) MemoryManager(NumPhysPages);
 
 		processManager = new(std::nothrow) ProcessManager();
+
+		fileManager = new(std::nothrow) FileManager();
+#endif
 #endif
 
 #ifdef FILESYS

@@ -273,6 +273,9 @@ SysOpen()
 		fd = currentThread->space->GetProcessControlBlock()->GetFDSet()->AddFD(file); // Add a file descriptor to the array
 		if (fd == -1) {
 			DEBUG('a', "File could not be added to FDArray");
+		} else {
+			//if added to fdSet add to global open file list
+			fileManager->OpenFile(name);
 		}
 	}
 
@@ -357,9 +360,14 @@ SysClose()
 {
 	int fd = machine->ReadRegister(4);	//file descriptor
 
-	// Call helper DeleteFD function to remove the file descriptor from the array
-	if (!currentThread->space->GetProcessControlBlock()->GetFDSet()->DeleteFD(fd)) {
-		//fd doesn't exist
+	FDSet *fdSet = currentThread->space->GetProcessControlBlock()->GetFDSet();
+	OpenFile *toBeDeleted = fdSet->GetFile(fd);
+	//fd exists
+	if (toBeDeleted != NULL) {
+		// Remove from global open file list
+		fileManager->CloseFile(toBeDeleted->GetName());	
+		// Call helper DeleteFD function to remove the file descriptor from the array
+		fdSet->DeleteFD(fd);
 	}
 
 	increasePC(); // Remember to increment the PC
