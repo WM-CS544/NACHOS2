@@ -9,13 +9,15 @@ main()
 	char prompt[2], ch, buffer[60], redirBuffer[60], *args[5];
 	char arg1[60], arg2[60], arg3[60], arg4[60], arg5[60];
 	int i, x, redir, redirOut, redirIn, argsNow, argsIndex;
-	int comment;
+	int comment, read, exec=1;
 
 	prompt[0] = '-';
 	prompt[1] = '-';
 
 	while( 1 ) {
-		Write(prompt, 2, output);
+		if (exec) {
+			Write(prompt, 2, output);
+		}
 		/*initialize variables*/
 		args[0] = buffer;
 		args[1] = arg2;
@@ -29,8 +31,13 @@ main()
 		argsNow = 0;
 		argsIndex = 0;
 		comment = 0;
-		Read(&ch, 1, input);
+		exec = 0;
+		read = Read(&ch, 1, input);
 		while (i < 60 && ch != '\n' && redir < 60) {
+			/*stop if done reading*/
+			if (read == 0) {
+				Halt();
+			}
 			if (!comment) {
 				if (ch == '#') {
 					comment = 1;
@@ -69,7 +76,7 @@ main()
 				}
 			}
 			/*read next character*/
-			Read(&ch, 1, input);
+			read = Read(&ch, 1, input);
 		}
 		/*add null byte to strings*/
 		if (argsIndex != 0) {
@@ -85,7 +92,8 @@ main()
 			args[argsNow] = (char *)0;
 		}
 
-		if( i > 0 ) {
+		if( i > 0 && buffer[0] != '#') {
+			exec = 1;
 			newProc = Fork();
 			/*child*/
 			if (newProc == 0) {

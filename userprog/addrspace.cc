@@ -70,7 +70,28 @@ AddrSpace::AddrSpace(OpenFile *executable)
     if ((noffH.noffMagic != NOFFMAGIC) && 
 		(WordToHost(noffH.noffMagic) == NOFFMAGIC))
     	SwapHeader(&noffH);
+#ifndef CHANGED
     ASSERT(noffH.noffMagic == NOFFMAGIC);
+#else
+	//check if script or executable or neither
+	char *script = new(std::nothrow) char[7];
+	char const *shell= "shell";
+	OpenFile *tmp;
+	executable->ReadAt(script, 7, 0);
+	if (strcmp(script, "#SCRIPT") == 0) {
+		tmp = executable;
+		executable = fileSystem->Open((char *)shell);
+    executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
+    if ((noffH.noffMagic != NOFFMAGIC) && 
+		(WordToHost(noffH.noffMagic) == NOFFMAGIC))
+    	SwapHeader(&noffH);
+		//can't open shell
+		ASSERT(executable != NULL);
+	} else if (noffH.noffMagic != NOFFMAGIC) {
+		//not script or noff executable
+		ASSERT(0);
+	}
+#endif
 
 // how big is address space?
     size = noffH.code.size + noffH.initData.size + noffH.uninitData.size 
@@ -94,18 +115,18 @@ AddrSpace::AddrSpace(OpenFile *executable)
 // first, set up the translation 
     pageTable = new(std::nothrow) TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
-	pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
+			pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
 #ifndef CHANGED
-	pageTable[i].physicalPage = i;
+			pageTable[i].physicalPage = i;
 #else
-	pageTable[i].physicalPage = memoryManager->NewPage();
+			pageTable[i].physicalPage = memoryManager->NewPage();
 #endif
-	pageTable[i].valid = true;
-	pageTable[i].use = false;
-	pageTable[i].dirty = false;
-	pageTable[i].readOnly = false;  // if the code segment was entirely on 
-					// a separate page, we could set its 
-					// pages to be read-only
+			pageTable[i].valid = true;
+			pageTable[i].use = false;
+			pageTable[i].dirty = false;
+			pageTable[i].readOnly = false;  // if the code segment was entirely on 
+							// a separate page, we could set its 
+							// pages to be read-only
     }
 #endif    
 
@@ -136,7 +157,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
 				fprintf(stderr, "i = %d\n", i);
 				fprintf(stderr, "phys = %d\n", physAddress);
 				fprintf(stderr, "writtenSoFar = %d\n", writtenSoFar);
-				fprintf(stderr, "location = %d\n", location);*/
+				printf(stderr, "location = %d\n", location);*/
 
 				//not at beginning of page
 				if (i % PageSize != 0) { //more data than can fit on page
@@ -203,6 +224,11 @@ AddrSpace::AddrSpace(OpenFile *executable)
 
 #ifdef CHANGED
 	processControlBlock = new(std::nothrow) ProcessControlBlock(NULL, NULL, 1);
+	if (strcmp(script, "#SCRIPT") == 0) {
+		processControlBlock->GetFDSet()->DeleteFD(0);
+		OpenFile *scriptFile = fileSystem->Open(tmp->GetName());
+		processControlBlock->GetFDSet()->AddFD(scriptFile);
+	}
 #endif
 
 }
