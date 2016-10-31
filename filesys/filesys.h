@@ -58,7 +58,11 @@ class FileSystem {
 	  int fileDescriptor = OpenForReadWrite(name, false);
 
 	  if (fileDescriptor == -1) return NULL;
+#ifndef CHANGED
 	  return new(std::nothrow) OpenFile(fileDescriptor);
+#else
+	  return new(std::nothrow) OpenFile(fileDescriptor, name);
+#endif
       }
 
     bool Remove(char *name) { return Unlink(name) == 0; }

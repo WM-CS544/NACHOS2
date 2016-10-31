@@ -22,14 +22,23 @@
 
 #include "copyright.h"
 #include "utility.h"
+#ifdef CHANGED
+#include <new>
+#endif
 
 #ifdef FILESYS_STUB			// Temporarily implement calls to 
 					// Nachos file system as calls to UNIX!
 					// See definitions listed under #else
 class OpenFile {
   public:
+#ifndef CHANGED
     OpenFile(int f) { file = f; currentOffset = 0; }	// open the file
     ~OpenFile() { Close(file); }			// close the file
+#else
+    OpenFile(int f, char *name) { file = f; currentOffset = 0; \
+			fileName = new(std::nothrow) char[strlen(name)+1]; strncpy(fileName,name,strlen(name)+1); }	// open the file
+    ~OpenFile() { Close(file); delete fileName; }			// close the file
+#endif
 
     int ReadAt(char *into, int numBytes, int position) { 
     		Lseek(file, position, 0); 
@@ -52,8 +61,14 @@ class OpenFile {
 		}
 
     int Length() { Lseek(file, 0, 2); return Tell(file); }
+#ifdef CHANGED
+		char *GetName() { return fileName; }
+#endif
     
   private:
+#ifdef CHANGED
+		char *fileName;
+#endif
     int file;
     int currentOffset;
 };
