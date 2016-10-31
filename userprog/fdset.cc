@@ -120,7 +120,10 @@ FDSet::DeleteFD(int fd)
 	if (fd < (int)(sizeof(fdArray)/sizeof(fdArray[0])) && fd >= 0) {
 			if (fdArray[fd] != NULL) {
 				if (fdArray[fd]->numOpen == 1) { //delete file
-					delete fdArray[fd]->file;
+					//can't delete console openFile
+					if ((int)fdArray[fd]->file != 1 && (int)fdArray[fd] != 2) {
+						delete fdArray[fd]->file;
+					}
 					delete fdArray[fd];
 					fdArray[fd] = NULL;
 				} else { //don't delete, decrement numOpen
