@@ -113,16 +113,25 @@ FDSet::NumOpen(int fd)
 	return -1;
 }
 
+/*
+ * returns:
+ *	-1 can't delete fd
+ *	0 just decrement numOpen
+ *	1 closed file
+ */
 int
 FDSet::DeleteFD(int fd)
 {
 	fdSetLock->Acquire();
+
+	int retval = 0;
 	if (fd < (int)(sizeof(fdArray)/sizeof(fdArray[0])) && fd >= 0) {
 			if (fdArray[fd] != NULL) {
 				if (fdArray[fd]->numOpen == 1) { //delete file
 					//can't delete console openFile
 					if ((int)fdArray[fd]->file != 1 && (int)fdArray[fd] != 2) {
 						delete fdArray[fd]->file;
+						retval = 1;
 					}
 					delete fdArray[fd];
 					fdArray[fd] = NULL;
@@ -132,11 +141,11 @@ FDSet::DeleteFD(int fd)
 					fdArray[fd] = NULL;
 				}
 				fdSetLock->Release();
-				return 1;
+				return retval;
 			}
 	}
 	fdSetLock->Release();
-	return 0;
+	return -1;
 }
 
 int

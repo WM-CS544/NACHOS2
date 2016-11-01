@@ -228,6 +228,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
 		processControlBlock->GetFDSet()->DeleteFD(0);
 		OpenFile *scriptFile = fileSystem->Open(tmp->GetName());
 		processControlBlock->GetFDSet()->AddFD(scriptFile);
+		fileManager->OpenFile(tmp->GetName());
 	}
 #endif
 

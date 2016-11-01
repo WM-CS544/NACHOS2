@@ -15,6 +15,7 @@ class FileManager {
 
 		void OpenFile(char *fileName);
 		void CloseFile(char *fileName);
+		Lock *GetLock(char *fileName);
 
 	private:
 		

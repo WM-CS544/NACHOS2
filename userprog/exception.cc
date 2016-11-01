@@ -305,7 +305,12 @@ SysRead()
 		} else if ((int) file == 2) {	//2 = cookie for console output
 			//can't read from output - do nothing
 		} else {
+			//get file lock then read from file
+			Lock *fileLock = fileManager->GetLock(file->GetName());
+			ASSERT(fileLock != NULL);
+			fileLock->Acquire();
 			bytesRead = file->Read(buffer, size);
+			fileLock->Release();
 			writeDataToUser(va, buffer, size);
 		}
 
@@ -341,7 +346,12 @@ SysWrite()
 		} else if ((int) file == 2) {	//2 = cookie for console output
 			synchConsole->Write(buffer, size);
 		} else {
+			//get file lock then write to file
+			Lock *fileLock = fileManager->GetLock(file->GetName());
+			ASSERT(fileLock != NULL);
+			fileLock->Acquire();
 			file->Write(buffer, size);
+			fileLock->Release();
 		}
 	} else {
 		// In this case we dont return anything since Write() is a void
@@ -362,14 +372,19 @@ SysClose()
 
 	FDSet *fdSet = currentThread->space->GetProcessControlBlock()->GetFDSet();
 	OpenFile *toBeDeleted = fdSet->GetFile(fd);
+	char *nameToBeDeleted = new(std::nothrow) char[strlen(toBeDeleted->GetName())+1];
+	strncpy(nameToBeDeleted, toBeDeleted->GetName(), strlen(toBeDeleted->GetName())+1);
+
 	//fd exists
 	if (toBeDeleted != NULL) {
-		// Remove from global open file list
-		fileManager->CloseFile(toBeDeleted->GetName());	
 		// Call helper DeleteFD function to remove the file descriptor from the array
-		fdSet->DeleteFD(fd);
+		if (fdSet->DeleteFD(fd) == 1) {
+			// Remove from global open file list
+			fileManager->CloseFile(nameToBeDeleted);	
+		}
 	}
-
+	
+	delete nameToBeDeleted;
 	increasePC(); // Remember to increment the PC
 }
 

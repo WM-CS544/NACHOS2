@@ -36,7 +36,7 @@ CFLAGS = -G 0 -c $(INCDIR) -DCHANGED -nostartfiles
 
 all: halt shell matmult sort fileio fromcons hellocons hellofile newfork parent_child kid \
 	seq_child deepfork deepkid1 deepkid2 share sharekid maxfork arg_seq_child argtest argkid \
-	cat cp
+	cat cp filesynch filesynchkid
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.s > strt.s
@@ -180,4 +180,16 @@ cp.o: cp.c
 cp: cp.o start.o
 	$(LD) $(LDFLAGS) start.o cp.o -o cp.coff
 	../bin/coff2noff cp.coff cp 
+
+filesynch.o: filesynch.c
+	$(CC) $(CFLAGS) -c filesynch.c
+filesynch: filesynch.o start.o
+	$(LD) $(LDFLAGS) start.o filesynch.o -o filesynch.coff
+	../bin/coff2noff filesynch.coff filesynch 
+
+filesynchkid.o: filesynchkid.c
+	$(CC) $(CFLAGS) -c filesynchkid.c
+filesynchkid: filesynchkid.o start.o
+	$(LD) $(LDFLAGS) start.o filesynchkid.o -o filesynchkid.coff
+	../bin/coff2noff filesynchkid.coff filesynchkid
 

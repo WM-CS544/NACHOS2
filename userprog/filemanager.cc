@@ -39,6 +39,7 @@ FileManager::OpenFile(char *fileName)
 		//if file already opened
 		if (strcmp(curNode->name, fileName) == 0) {
 			curNode->numOpen++;
+			lock->Release();
 			return;
 		}
 		prevNode = curNode;
@@ -49,7 +50,7 @@ FileManager::OpenFile(char *fileName)
 	Lock *newLock = new(std::nothrow) Lock("file lock");
 	char *newName = new(std::nothrow) char[strlen(fileName)+1];
 	strncpy(newName, fileName, strlen(fileName));
-	newName[strlen(fileName)+1] = '\0';
+	newName[strlen(fileName)] = '\0';
 
 	FileNode *newNode = new(std::nothrow) FileNode;
 	newNode->lock = newLock;
@@ -102,6 +103,25 @@ FileManager::CloseFile(char *fileName)
 	ASSERT(0);
 
 	lock->Release();
+}
+
+Lock*
+FileManager::GetLock(char *fileName)
+{
+	lock->Acquire();
+
+	FileNode *curNode = fileListHead;
+
+	while (curNode != NULL) {
+		if (strcmp(curNode->name, fileName) == 0) {
+			lock->Release();
+			return curNode->lock;
+		}
+		curNode = curNode->next;
+	}
+
+	lock->Release();
+	return NULL;
 }
 
 

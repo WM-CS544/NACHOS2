@@ -25,6 +25,9 @@ test/argtest
 test/argkid
 test/cat
 test/cp
+test/filesynch
+test/filesynchkid
+filesynch.output
 fileio.out
 hello.out
 p2check.tgz
