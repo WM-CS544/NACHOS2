@@ -55,14 +55,10 @@ SynchConsole::GetChar()
 int
 SynchConsole::Read(char *buffer, int size)
 {
-	lock->Acquire();
 	
 	for (int i=0; i < size; i++) {
-		readAvail->P();
-		buffer[i] = console->GetChar();
+		buffer[i] = GetChar();
 	}	
-
-	lock->Release();
 
 	return size;
 }
