@@ -119,6 +119,8 @@ main()
 				}
 				/*start command*/
 				Exec(buffer, args);
+				/*if returned exit*/
+				Exit(-1);
 			/*parent*/
 			} else {
 				Join(newProc);
