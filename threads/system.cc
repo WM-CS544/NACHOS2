@@ -169,8 +169,9 @@ Initialize(int argc, char **argv)
 		processManager = new(std::nothrow) ProcessManager();
 
 		fileManager = new(std::nothrow) FileManager();
-#endif
+
 		timeSlicer = new(std::nothrow) Timer(TimerInterruptHandler, 0, true);
+#endif
 #endif
 
 #ifdef FILESYS
