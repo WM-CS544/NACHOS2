@@ -153,11 +153,6 @@ AddrSpace::AddrSpace(OpenFile *executable)
 				int physAddress = GetPhysAddress((noffH.code.virtualAddr + i) - (noffH.code.virtualAddr % PageSize));
 				unsigned int writtenSoFar = i - (noffH.code.virtualAddr % PageSize);
 				int location = noffH.code.inFileAddr + writtenSoFar;
-				/*fprintf(stderr, "-------------------------------\ncode\n");
-				fprintf(stderr, "i = %d\n", i);
-				fprintf(stderr, "phys = %d\n", physAddress);
-				fprintf(stderr, "writtenSoFar = %d\n", writtenSoFar);
-				printf(stderr, "location = %d\n", location);*/
 
 				//not at beginning of page
 				if (i % PageSize != 0) { //more data than can fit on page
@@ -193,11 +188,6 @@ AddrSpace::AddrSpace(OpenFile *executable)
 				int physAddress = GetPhysAddress((noffH.initData.virtualAddr + i) - (noffH.initData.virtualAddr % PageSize));
 				unsigned int writtenSoFar = i - (noffH.initData.virtualAddr % PageSize);
 				int location = noffH.initData.inFileAddr + writtenSoFar;
-				/*fprintf(stderr, "-------------------------------\ninitData\n");
-				fprintf(stderr, "i = %d\n", i);
-				fprintf(stderr, "phys = %d\n", physAddress);
-				fprintf(stderr, "writtenSoFar = %d\n", writtenSoFar);
-				fprintf(stderr, "location = %d\n", location);*/
 
 				//not at beginning of page
 				if (i % PageSize != 0) { //more data than can fit on page
@@ -416,11 +406,6 @@ AddrSpace::Exec(OpenFile *executable) {
 			int physAddress = GetPhysAddress((noffH.code.virtualAddr + i) - (noffH.code.virtualAddr % PageSize));
 			unsigned int writtenSoFar = i - (noffH.code.virtualAddr % PageSize);
 			int location = noffH.code.inFileAddr + writtenSoFar;
-			/*fprintf(stderr, "-------------------------------\ncode\n");
-			fprintf(stderr, "i = %d\n", i);
-			fprintf(stderr, "phys = %d\n", physAddress);
-			fprintf(stderr, "writtenSoFar = %d\n", writtenSoFar);
-			fprintf(stderr, "location = %d\n", location);*/
 
 			//not at beginning of page
 			if (i % PageSize != 0) { //more data than can fit on page
@@ -452,11 +437,6 @@ AddrSpace::Exec(OpenFile *executable) {
 			int physAddress = GetPhysAddress((noffH.initData.virtualAddr + i) - (noffH.initData.virtualAddr % PageSize));
 			unsigned int writtenSoFar = i - (noffH.initData.virtualAddr % PageSize);
 			int location = noffH.initData.inFileAddr + writtenSoFar;
-			/*fprintf(stderr, "-------------------------------\ninitData\n");
-			fprintf(stderr, "i = %d\n", i);
-			fprintf(stderr, "phys = %d\n", physAddress);
-			fprintf(stderr, "writtenSoFar = %d\n", writtenSoFar);
-			fprintf(stderr, "location = %d\n", location);*/
 
 			//not at beginning of page
 			if (i % PageSize != 0) { //more data than can fit on page
@@ -481,7 +461,6 @@ AddrSpace::Exec(OpenFile *executable) {
 	}
 
 }
-
 
 //TODO: Add sanity checks
 char
