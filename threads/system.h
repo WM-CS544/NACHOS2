@@ -64,6 +64,8 @@ extern ProcessManager *processManager;
 
 #include "filemanager.h"
 extern FileManager *fileManager;
+
+extern Timer *timeSlicer;
 #endif
 #endif
 

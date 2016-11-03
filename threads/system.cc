@@ -36,6 +36,8 @@ MemoryManager *memoryManager;
 ProcessManager *processManager;
 
 FileManager *fileManager;
+
+Timer *timeSlicer;
 #endif
 Machine *machine;	// user program memory and registers
 #endif
@@ -168,6 +170,7 @@ Initialize(int argc, char **argv)
 
 		fileManager = new(std::nothrow) FileManager();
 #endif
+		timeSlicer = new(std::nothrow) Timer(TimerInterruptHandler, 0, true);
 #endif
 
 #ifdef FILESYS
