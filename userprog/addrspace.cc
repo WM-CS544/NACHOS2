@@ -120,6 +120,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
 			pageTable[i].physicalPage = i;
 #else
 			pageTable[i].physicalPage = memoryManager->NewPage();
+			ASSERT(pageTable[i].physicalPage != -1);
 #endif
 			pageTable[i].valid = true;
 			pageTable[i].use = false;
@@ -328,6 +329,7 @@ AddrSpace::AddrSpace(AddrSpace *parentSpace, int pid)
 		pageTable[i].readOnly = false;  // if the code segment was entirely on 
 																		// a separate page, we could set its 
 																		// pages to be read-only
+		ASSERT(pageTable[i].physicalPage != -1);
     }
 #endif    
 
@@ -387,6 +389,7 @@ AddrSpace::Exec(OpenFile *executable) {
 		pageTable[i].readOnly = false;  // if the code segment was entirely on 
 						// a separate page, we could set its 
 						// pages to be read-only
+		ASSERT(pageTable[i].physicalPage != -1);
 	}
 #endif    
 
