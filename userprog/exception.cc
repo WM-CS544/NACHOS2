@@ -164,12 +164,22 @@ ExceptionHandler(ExceptionType which)
 					printf("Undefined SYSCALL %d\n", type);
 					ASSERT(false);
 			}
+#ifdef CHANGED
+			break;
+#endif
 #ifdef USE_TLB
     case PageFaultException:
 			HandleTLBFault(machine->ReadRegister(BadVAddrReg));
 			break;
 #endif
+#ifndef CHANGED
     default: ;
+#else
+		default:
+			//exit with value of -1
+			machine->WriteRegister(4, -1);
+			SysExit();
+#endif
   }
 }
 
