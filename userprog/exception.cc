@@ -90,9 +90,11 @@ HandleTLBFault(int vaddr)
 //	are in machine.h.
 //----------------------------------------------------------------------
 #ifdef CHANGED
-void getStringFromUser(int va, char *string, int length);
-void getDataFromUser(int va, char *buffer, int length);
-void writeDataToUser(int va, char *buffer, int length);
+int getStringFromUser(int va, char *string, int length);
+int getDataFromUser(int va, char *buffer, int length);
+int writeDataToUser(int va, char *buffer, int length);
+int writeCharToUser(int va, char ch);
+int getPointerFromUser(int va);
 void increasePC();
 void SysCreate();
 void SysOpen();
@@ -184,48 +186,73 @@ ExceptionHandler(ExceptionType which)
 }
 
 #ifdef  CHANGED
-void
+int
 getStringFromUser(int va, char *string, int length)
 {
+	int valid = 0;
 	// iterate through length of the string until a null byte is reached, then break
 	for (int i=0; i<length; i++) {
-		string[i] = currentThread->space->ReadByte(va++);	//translation done in addrspace
+		valid = currentThread->space->ReadByte(va++, &string[i]);	//translation done in addrspace
+		if (!valid) {
+			return 0;
+		}
 		if (string[i] == '\0') {
 			break;
 		}
 	}
-
 	// Place a null byte at end of char * to terminate string
 	string[length-1] = '\0';
+
+	return 1;
 }
 
-void
+int
 getDataFromUser(int va, char *buffer, int length)
 {
+	int valid = 0;
 	for (int i=0; i<length; i++) {
-		buffer[i] = currentThread->space->ReadByte(va++); //translation done in addrspace
+		valid = currentThread->space->ReadByte(va++, &buffer[i]); //translation done in addrspace
+		if (!valid) {
+			return 0;
+		}
 	}	
+	return 1;
 }
 
-void
+int
 writeDataToUser(int va, char *buffer, int length)
 {
+	int valid = 0;
 	for (int i=0; i < length; i++) {
-		currentThread->space->WriteByte(va++, buffer[i]);
+		valid = currentThread->space->WriteByte(va++, buffer[i]);
+		if (!valid) {
+			return 0;
+		}
 	}
+	return 1;
 }
 
-void
+int
 writeCharToUser(int va, char ch) {
-	currentThread->space->WriteByte(va, ch);
+	int valid = 0;
+	valid = currentThread->space->WriteByte(va, ch);
+	if (!valid) {
+		return 0;
+	} else {
+		return 1;
+	}
 }
 
 int
 getPointerFromUser(int va) {
 	//assumes 4 byte pointer little endian
 	char newVA[4];
+	int valid = 0;
 	for (int i=0; i < 4; i++) {
-		newVA[i] = currentThread->space->ReadByte(va++); //translation done in addrspace
+		valid = currentThread->space->ReadByte(va++, &newVA[i]); //translation done in addrspace
+		if (!valid) {
+			return -1;
+		}
 	}
 	unsigned int result = ((newVA[3] & 255) << 24) | ((newVA[2] & 255) << 16) | ((newVA[1] & 255) << 8) | (newVA[0] & 255);
 	return result;
@@ -253,11 +280,22 @@ SysCreate()
 	char *name = new(std::nothrow) char[42]; // 42 chosen semi-arbitrarily.  Might want to change this later.
 	int va = machine->ReadRegister(4);	//virtual address of name string
 
-	getStringFromUser(va, name, 42);
+	if (va != 0) {
+		int valid = getStringFromUser(va, name, 42);
 
-	if (!fileSystem->Create(name, 0)) {
-		DEBUG('a', "File could not be created");
-		// On failure do nothing, since the syscall is a void function
+		//exit if trying to read from invalid va
+		if (!valid) {
+			//exit with value of -1
+			machine->WriteRegister(4, -1);
+			SysExit();
+			delete name;
+			return;
+		}
+
+		if (!fileSystem->Create(name, 0)) {
+			DEBUG('a', "File could not be created");
+			// On failure do nothing, since the syscall is a void function
+		}
 	}
 
 	increasePC(); // Remember to increment the program counter
@@ -275,17 +313,28 @@ SysOpen()
 	int va = machine->ReadRegister(4);	//virtual address of name string
 	int fd = -1; // Initialize file descriptor to -1 in case of error
 	
-	// Fetch the filename string from user-mem
-	getStringFromUser(va, name, 42);
+	if (va != 0) {
+		// Fetch the filename string from user-mem
+		int valid = getStringFromUser(va, name, 42);
 
-	if ((file = fileSystem->Open(name)) != NULL) {
-		DEBUG('a', "File opened");
-		fd = currentThread->space->GetProcessControlBlock()->GetFDSet()->AddFD(file); // Add a file descriptor to the array
-		if (fd == -1) {
-			DEBUG('a', "File could not be added to FDArray");
-		} else {
-			//if added to fdSet add to global open file list
-			fileManager->OpenFile(name);
+		//exit if trying to read from invalid va
+		if (!valid) {
+			//exit with value of -1
+			machine->WriteRegister(4, -1);
+			SysExit();
+			delete name;
+			return;
+		}
+
+		if ((file = fileSystem->Open(name)) != NULL) {
+			DEBUG('a', "File opened");
+			fd = currentThread->space->GetProcessControlBlock()->GetFDSet()->AddFD(file); // Add a file descriptor to the array
+			if (fd == -1) {
+				DEBUG('a', "File could not be added to FDArray");
+			} else {
+				//if added to fdSet add to global open file list
+				fileManager->OpenFile(name);
+			}
 		}
 	}
 
@@ -295,7 +344,6 @@ SysOpen()
 	delete name; // Delete the name string to avoid memory leaks
 }
 
-//TODO: Does size include NULL and do we check if writing too much to user and check if console open
 //int Read(char *buffer, int size, OpenFileId id)
 void
 SysRead()
@@ -307,35 +355,56 @@ SysRead()
 	int fd = machine->ReadRegister(6);		//file descriptor
 	char *buffer = new(std::nothrow) char[size];
 
-	// GetFile should return null on error.  In this case do nothing
-	if ((file = currentThread->space->GetProcessControlBlock()->GetFDSet()->GetFile(fd)) != NULL) {
-		if ((int) file == 1) {	//1 = cookie for console input
-			bytesRead = synchConsole->Read(buffer, size);
-			writeDataToUser(va, buffer, size);
-		} else if ((int) file == 2) {	//2 = cookie for console output
-			//can't read from output - do nothing
-		} else {
-			//get file lock then read from file
-			Lock *fileLock = fileManager->GetLock(file->GetName());
-			ASSERT(fileLock != NULL);
-			fileLock->Acquire();
-			bytesRead = file->Read(buffer, size);
-			fileLock->Release();
-			writeDataToUser(va, buffer, size);
-		}
+	//if valid pointer
+	if (va != 0) {
+		// GetFile should return null on error.  In this case do nothing
+		if ((file = currentThread->space->GetProcessControlBlock()->GetFDSet()->GetFile(fd)) != NULL) {
+			if ((int) file == 1) {	//1 = cookie for console input
+				bytesRead = synchConsole->Read(buffer, size);
+				int valid = writeDataToUser(va, buffer, size);
 
-	} else {
-		// In this case we just keep bytesRead set to -1
-		// and remember to increment PC
-		//fd doesn't exist
+				//if not a valid va exit thread
+				if (!valid) {
+					//exit with value of -1
+					machine->WriteRegister(4, -1);
+					SysExit();
+					delete buffer;
+					return;
+				}
+
+			} else if ((int) file == 2) {	//2 = cookie for console output
+				//can't read from output - do nothing
+			} else {
+				//get file lock then read from file
+				Lock *fileLock = fileManager->GetLock(file->GetName());
+				ASSERT(fileLock != NULL);
+				fileLock->Acquire();
+				bytesRead = file->Read(buffer, size);
+				fileLock->Release();
+				int valid = writeDataToUser(va, buffer, size);
+				
+				//if not a valid va exit thread
+				if (!valid) {
+					//exit with value of -1
+					machine->WriteRegister(4, -1);
+					SysExit();
+					delete buffer;
+					return;
+				}
+			}
+
+		} else {
+			// In this case we just keep bytesRead set to -1
+			// and remember to increment PC
+			//fd doesn't exist
+		}
 	}
 
 	// Place the number of bytes read into R2 to return
 	machine->WriteRegister(2, bytesRead);
 	increasePC();
-	delete buffer; // Avoid memory leaks
+	delete buffer;
 }
-//TODO: Check if console open
 //void Write(char *buffer, int size, OpenFileId id)
 void
 SysWrite()
@@ -346,27 +415,38 @@ SysWrite()
 	int fd = machine->ReadRegister(6);		//file descriptor
 	char *buffer = new(std::nothrow) char[size];
 
-	// Fetch string from user-mem
-	getDataFromUser(va, buffer, size);
+	//if valid pointer
+	if (va != 0) {
+		// Fetch string from user-mem
+		int valid = getDataFromUser(va, buffer, size);
 
-	// GetFile should return null on error.  In this case do nothing
-	if ((file = currentThread->space->GetProcessControlBlock()->GetFDSet()->GetFile(fd)) != NULL) {
-		if ((int) file == 1) { //1 = cookie for console input
-			//can't write to input
-		} else if ((int) file == 2) {	//2 = cookie for console output
-			synchConsole->Write(buffer, size);
-		} else {
-			//get file lock then write to file
-			Lock *fileLock = fileManager->GetLock(file->GetName());
-			ASSERT(fileLock != NULL);
-			fileLock->Acquire();
-			file->Write(buffer, size);
-			fileLock->Release();
+		if (!valid) {
+			//exit with value of -1
+			machine->WriteRegister(4, -1);
+			SysExit();
+			delete buffer;
+			return;
 		}
-	} else {
-		// In this case we dont return anything since Write() is a void
-		// Just remember to increment PC at end
-		//fd doesn't exist
+
+		// GetFile should return null on error.  In this case do nothing
+		if ((file = currentThread->space->GetProcessControlBlock()->GetFDSet()->GetFile(fd)) != NULL) {
+			if ((int) file == 1) { //1 = cookie for console input
+				//can't write to input
+			} else if ((int) file == 2) {	//2 = cookie for console output
+				synchConsole->Write(buffer, size);
+			} else {
+				//get file lock then write to file
+				Lock *fileLock = fileManager->GetLock(file->GetName());
+				ASSERT(fileLock != NULL);
+				fileLock->Acquire();
+				file->Write(buffer, size);
+				fileLock->Release();
+			}
+		} else {
+			// In this case we dont return anything since Write() is a void
+			// Just remember to increment PC at end
+			//fd doesn't exist
+		}
 	}
 	
 	// No return value for the Write() syscall
@@ -450,7 +530,6 @@ SysJoin()
 	increasePC();
 }
 
-//TODO: check if parent is alive
 //void Exit(int status)
 void
 SysExit()
@@ -474,78 +553,143 @@ SysExit()
 void
 SysExec()
 {
-
 	int retval = -1;
 	OpenFile *executable;
 	char *fileName = new(std::nothrow) char[42];
 	int nameVA = machine->ReadRegister(4);	//virtual address of name string
 
-	getStringFromUser(nameVA, fileName, 42); //get filename string
+	//if valid pointer
+	if (nameVA != 0) {
+		int valid = getStringFromUser(nameVA, fileName, 42); //get filename string
 
-	char *args[5];
-	for (unsigned int i=0; i < sizeof(args)/sizeof(args[0]); i++) {
-		args[i] = new(std::nothrow) char[42];
-	}
-	int argsVA = machine->ReadRegister(5);	//virtual address of arg array
-	int numArgs = 0;
-
-	//get arguments
-	int stringVA = getPointerFromUser(argsVA);
-	while(stringVA != '\0' && numArgs < 5) {
-		getStringFromUser(stringVA, args[numArgs++], 42);
-		argsVA+=4;
-		stringVA = getPointerFromUser(argsVA);
-	}
-
-	//can open file
-	if ((executable = fileSystem->Open(fileName)) != NULL) {
-		currentThread->space->Exec(executable);
-		currentThread->space->InitRegisters();
-		currentThread->space->RestoreState();
-
-		//hide args "above" stack
-		int sp = machine->ReadRegister(StackReg);
-		int argv[numArgs];
-		for (int i=0; i < numArgs; i++) {
-			int len = strlen(args[i]) + 1;
-			sp -= len;
-			//write string
-			for (int x=0; x < len; x++) {
-				writeCharToUser((sp+x), args[i][x]);			
-			}
-			//store pointer
-			argv[i] = sp;
-		}
-		//align pointer on 4 byte boundrary	
-		sp = sp &~3;	//stack goes top down
-
-		//write pointers
-		sp -= sizeof(int) * numArgs;
-		for (int i=0; i < numArgs; i++) {
-			*(unsigned int *) &machine->mainMemory[currentThread->space->GetPhysAddress(sp + i*4)] = WordToMachine((unsigned int) argv[i]);
+		//Exit if trying to read from invalid va
+		if (!valid) {
+			//exit with value of -1
+			machine->WriteRegister(4, -1);
+			SysExit();
+			delete fileName;
+			return;
 		}
 
-		//write values to registers
-		machine->WriteRegister(4, numArgs);
-		machine->WriteRegister(5, sp);
-		machine->WriteRegister(StackReg, sp-8);
-
-		//cleanup
+		char *args[5];
 		for (unsigned int i=0; i < sizeof(args)/sizeof(args[0]); i++) {
-			delete args[i];
+			args[i] = new(std::nothrow) char[42];
 		}
-		delete executable;
-		delete fileName;
+		int argsVA = machine->ReadRegister(5);	//virtual address of arg array
+		int numArgs = 0;
 
-		//start running user program
-		machine->Run();
+		//if valid pointer
+		if (argsVA != 0) {
+			
+			//get arguments
+			int stringVA = getPointerFromUser(argsVA);
+
+			//if invalid va, exit
+			if (stringVA == -1) {
+				//exit with value of -1
+				machine->WriteRegister(4, -1);
+				SysExit();
+				//cleanup
+				for (unsigned int i=0; i < sizeof(args)/sizeof(args[0]); i++) {
+					delete args[i];
+				}
+				delete fileName;
+				return;
+			}
+
+			while(stringVA != '\0' && numArgs < 5) {
+				valid = getStringFromUser(stringVA, args[numArgs++], 42);
+
+				//if invalid va exit
+				if (!valid) {
+					//exit with value of -1
+					machine->WriteRegister(4, -1);
+					SysExit();
+					//cleanup
+					for (unsigned int i=0; i < sizeof(args)/sizeof(args[0]); i++) {
+						delete args[i];
+					}
+					delete fileName;
+					return;
+				}
+
+				argsVA+=4;
+				stringVA = getPointerFromUser(argsVA);
+			
+				//if invalid va, exit
+				if (stringVA == -1) {
+					//exit with value of -1
+					machine->WriteRegister(4, -1);
+					SysExit();
+					//cleanup
+					for (unsigned int i=0; i < sizeof(args)/sizeof(args[0]); i++) {
+						delete args[i];
+					}
+					delete fileName;
+					return;
+				}
+			}
+		}
+
+		//can open file
+		if ((executable = fileSystem->Open(fileName)) != NULL) {
+			currentThread->space->Exec(executable);
+			currentThread->space->InitRegisters();
+			currentThread->space->RestoreState();
+
+			//hide args "above" stack
+			int sp = machine->ReadRegister(StackReg);
+			int argv[numArgs];
+			for (int i=0; i < numArgs; i++) {
+				int len = strlen(args[i]) + 1;
+				sp -= len;
+				//write string
+				for (int x=0; x < len; x++) {
+					valid = writeCharToUser((sp+x), args[i][x]);			
+
+					//if invalid va exit
+					if (!valid) {
+						SysExit();
+						//cleanup
+						for (unsigned int y=0; y < sizeof(args)/sizeof(args[0]); y++) {
+							delete args[y];
+						}
+						delete executable;
+						delete fileName;
+						return;
+					}
+
+				}
+				//store pointer
+				argv[i] = sp;
+			}
+			//align pointer on 4 byte boundrary	
+			sp = sp &~3;	//stack goes top down
+
+			//write pointers
+			sp -= sizeof(int) * numArgs;
+			for (int i=0; i < numArgs; i++) {
+				*(unsigned int *) &machine->mainMemory[currentThread->space->GetPhysAddress(sp + i*4)] = WordToMachine((unsigned int) argv[i]);
+			}
+
+			//write values to registers
+			machine->WriteRegister(4, numArgs);
+			machine->WriteRegister(5, sp);
+			machine->WriteRegister(StackReg, sp-8);
+
+			//cleanup
+			for (unsigned int i=0; i < sizeof(args)/sizeof(args[0]); i++) {
+				delete args[i];
+			}
+			delete executable;
+			delete fileName;
+
+			//start running user program
+			machine->Run();
+		}
 	}
 
 	//cleanup
-	for (unsigned int i=0; i < sizeof(args)/sizeof(args[0]); i++) {
-		delete args[i];
-	}
-	delete executable;
 	delete fileName;
 	//return if failure
 	machine->WriteRegister(2, retval);

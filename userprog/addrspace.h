@@ -38,10 +38,10 @@ class AddrSpace {
 		unsigned int GetNumPages() {return numPages;};
 		ProcessControlBlock *GetProcessControlBlock();
 
-		char ReadByte(int va);
-		void WriteByte(int va, char byte);
-		int GetPhysPageNum(int virtPageNum);
-		int GetPhysAddress(int va);
+		int ReadByte(unsigned int va, char *ch);
+		int WriteByte(unsigned int va, char byte);
+		int GetPhysPageNum(unsigned int virtPageNum);
+		int GetPhysAddress(unsigned int va);
 #endif
 
   private:

@@ -465,28 +465,28 @@ AddrSpace::Exec(OpenFile *executable) {
 
 }
 
-//TODO: Add sanity checks
-char
-AddrSpace::ReadByte(int va)
+int
+AddrSpace::ReadByte(unsigned int va, char *ch)
 {
-	int virtPageNum = va / PageSize;
-	int offset = va % PageSize;
-	
-	int physPageNum = GetPhysPageNum(virtPageNum);
-
-	return machine->mainMemory[(physPageNum*PageSize) + offset];
+	int pa = GetPhysAddress(va);
+	if (pa != -1) {
+		*ch = machine->mainMemory[pa];
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
-//TODO: Add sanity checks
-void
-AddrSpace::WriteByte(int va, char byte)
+int
+AddrSpace::WriteByte(unsigned int va, char byte)
 {
-	int virtPageNum = va / PageSize;
-	int offset = va % PageSize;
-	
-	int physPageNum = GetPhysPageNum(virtPageNum);
-
-	machine->mainMemory[(physPageNum*PageSize) + offset] = byte;
+	int pa = GetPhysAddress(va);
+	if (pa != -1) {
+		machine->mainMemory[pa] = byte;
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 ProcessControlBlock*
@@ -496,16 +496,26 @@ AddrSpace::GetProcessControlBlock()
 }
 
 int
-AddrSpace::GetPhysPageNum(int virtPageNum)
+AddrSpace::GetPhysPageNum(unsigned int virtPageNum)
 {
-	return pageTable[virtPageNum].physicalPage;
+	if (virtPageNum < numPages) {
+		return pageTable[virtPageNum].physicalPage;
+	} else {
+		//error if page out of range
+		return -1;
+	}
 }
 
-int AddrSpace::GetPhysAddress(int va)
+int AddrSpace::GetPhysAddress(unsigned int va)
 {
 	int virtPageNum = va / PageSize;
 	int offset = va % PageSize;
 	int physPageNum = GetPhysPageNum(virtPageNum);
+
+	//Not a valid page
+	if (physPageNum == -1)  {
+		return -1;
+	}
 
 	return (physPageNum * PageSize) + offset;
 }
