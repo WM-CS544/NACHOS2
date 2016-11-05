@@ -462,19 +462,24 @@ SysClose()
 
 	FDSet *fdSet = currentThread->space->GetProcessControlBlock()->GetFDSet();
 	OpenFile *toBeDeleted = fdSet->GetFile(fd);
-	char *nameToBeDeleted = new(std::nothrow) char[strlen(toBeDeleted->GetName())+1];
-	strncpy(nameToBeDeleted, toBeDeleted->GetName(), strlen(toBeDeleted->GetName())+1);
+	char *nameToBeDeleted;
+	if ((int)toBeDeleted != 1 && (int)toBeDeleted != 2) {
+		nameToBeDeleted = new(std::nothrow) char[strlen(toBeDeleted->GetName())+1];
+		strncpy(nameToBeDeleted, toBeDeleted->GetName(), strlen(toBeDeleted->GetName())+1);
+	}
 
 	//fd exists
 	if (toBeDeleted != NULL) {
 		// Call helper DeleteFD function to remove the file descriptor from the array
 		if (fdSet->DeleteFD(fd) == 1) {
 			// Remove from global open file list
-			fileManager->CloseFile(nameToBeDeleted);	
+			if ((int)toBeDeleted != 1 && (int)toBeDeleted != 2) {
+				fileManager->CloseFile(nameToBeDeleted);	
+				delete nameToBeDeleted;
+			}
 		}
 	}
 	
-	delete nameToBeDeleted;
 	increasePC(); // Remember to increment the PC
 }
 
